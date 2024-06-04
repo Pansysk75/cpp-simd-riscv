@@ -6,6 +6,7 @@ set (unit_tests
     # load_store
     # copy_from_to
     addition
+    operations
     # fft
     # reduce
     # scan

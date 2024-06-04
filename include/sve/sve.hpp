@@ -263,6 +263,12 @@ namespace rvv_impl {
             return __riscv_vle8_v_i8m1(ptr, size);
         }
 
+        template <typename T>
+        inline static void store(Vector vec, T* ptr)
+        {
+            __riscv_vse8(ptr, vec, size);
+        }
+
         inline static Vector set(Vector vec, Predicate index, value_t val)
         {
             return __riscv_vmerge_vxm_i8m1(vec, val, index, size);
@@ -270,8 +276,9 @@ namespace rvv_impl {
  
         inline static Vector fill(value_t val)
         {
-             return __riscv_vmv_s_x_i8m1(val, size);
+             return __riscv_vmv_v_x_i8m1(val, size);
         }
+
         inline static Vector index_series(value_t base, value_t step)
         {
     
@@ -281,6 +288,7 @@ namespace rvv_impl {
                 return __riscv_vmadd(vid, step, vbase, size);
         //     return svindex_s8(base, step);
         }
+
         inline static const Vector index0123 = __riscv_vreinterpret_v_u8m1_i8m1(__riscv_vid_v_u8m1(size));
     };
 
@@ -298,6 +306,12 @@ namespace rvv_impl {
             return __riscv_vle8_v_u8m1(ptr, size);
         }
 
+        template <typename T>
+        inline static void store(Vector vec, T* ptr)
+        {
+            __riscv_vse8(ptr, vec, size);
+        }
+
         inline static Vector set(Vector vec, Predicate index, value_t val)
         {
             return __riscv_vmerge_vxm_u8m1(vec, val, index, size);
@@ -305,8 +319,9 @@ namespace rvv_impl {
  
       inline static Vector fill(value_t val)
         {
-             return __riscv_vmv_s_x_u8m1(val, size);
+             return __riscv_vmv_v_x_u8m1(val, size);
         }
+
         inline static Vector index_series(value_t base, value_t step)
         {
     
@@ -314,6 +329,7 @@ namespace rvv_impl {
                 Vector vid = __riscv_vid_v_u8m1(size);
                 return __riscv_vmadd(vid, step, vbase, size);
         }
+
         inline static const Vector index0123 = __riscv_vid_v_u8m1(size);
     };
 
@@ -331,6 +347,12 @@ namespace rvv_impl {
             return __riscv_vle16_v_i16m1(ptr, size);
         }
 
+        template <typename T>
+        inline static void store(Vector vec, T* ptr)
+        {
+            __riscv_vse16(ptr, vec, size);
+        }
+
         // inline static value_t get(Vector vec, size_t idx)
         // {
         //     return __riscv_vmv_x(__riscv_vslidedown(vec, idx, size));
@@ -343,7 +365,7 @@ namespace rvv_impl {
  
       inline static Vector fill(value_t val)
         {
-             return __riscv_vmv_s_x_i16m1(val, size);
+             return __riscv_vmv_v_x_i16m1(val, size);
         }
         inline static Vector index_series(value_t base, value_t step)
         {
@@ -369,14 +391,20 @@ namespace rvv_impl {
             return __riscv_vle16_v_u16m1(ptr, size);
         }
 
+        template <typename T>
+        inline static void store(Vector vec, T* ptr)
+        {
+            __riscv_vse16(ptr, vec, size);
+        }
+
         inline static Vector set(Vector vec, Predicate index, value_t val)
         {
             return __riscv_vmerge_vxm_u16m1(vec, val, index, size);
         }
  
-      inline static Vector fill(value_t val)
+        inline static Vector fill(value_t val)
         {
-             return __riscv_vmv_s_x_u16m1(val, size);
+             return __riscv_vmv_v_x_u16m1(val, size);
         }
         inline static Vector index_series(value_t base, value_t step)
         {
@@ -522,26 +550,6 @@ namespace rvv_impl {
         //     svld1(sve_impl::simd_impl_<sizeof(float)>::all_true(), iota_array);
         // inline static const Vector index0123 = __riscv_viota(rvv_impl::simd_impl_<sizeof(float)>::all_true());
 
-// // ///////////////////////////////
-
-//         inline static Vector set(Vector vec, Predicate index, value_t val)
-//         {
-//             return __riscv_vmerge_vxm_i8m1(vec, val, index, size);
-//         }
- 
-//         inline static Vector fill(value_t val)
-//         {
-//              return __riscv_vmv_s_x_i8m1(val, size);
-//         }
-//         inline static Vector index_series(value_t base, value_t step)
-//         {
-    
-//                 Vector vbase = fill(base);
-//                 Vector vid = __riscv_vreinterpret_v_u8m1_i8m1(
-//                                     __riscv_vid_v_u8m1(size));
-//                 return __riscv_vmadd(vid, step, vbase, size);
-//         //     return svindex_s8(base, step);
-//         }
     };
 
     // template <>
@@ -751,7 +759,7 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
 
         inline simd(T val = {})
         {
-            vec = rvv_impl::simd_impl<T>::fill(val);
+            vec = Impl::fill(val);
         }
 
         inline simd(Vector v)
@@ -780,7 +788,7 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
                 "pointer should be same type as value_type");
             static_assert(is_simd_flag_type_v<Flag>,
                 "use element_aligned or vector_aligned tag");
-            vec = __riscv_vse(ptr, vec);
+            Impl::store(vec, ptr);
             // svst1(all_true, ptr, vec);
         }
 
@@ -1650,66 +1658,3 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
 //         return svsplice(msk.pred, x.vec, y.vec);
 //     }
 }}    // namespace rvv::experimental::parallelism_v2
-
-
-// template <typename T>
-// void test_simd(){
-
-//     using element_t = T;
-//     using simd_t = rvv::experimental::simd<element_t>;
-
-//     // using abi = rvv::experimental::parallelism_v2::simd_abi::rvv_abi;
-//     // using simd_t = rvv::experimental::simd<element_t, abi>;
-
-//     simd_t x0;
-//     simd_t x1(42);
-//     simd_t x2(x1);
-
-//     x0 = +x1;
-//     x0 = -x1;
-    
-//     x0++;
-//     ++x0;
-//     x0--;
-//     --x0;
-
-//     x0 = x1 + x2 - x1 * x2 / x1;
-
-//     x0 = x1 | x2 & x0;
-
-//     x0 += 5;
-//     x0 += x1;
-
-//     x0 -= 5;
-//     x0 -= x1;
-
-//     x0 *= 5;
-//     x0 *= x1;
-
-//     x0 /= 5;
-//     x0 /= x1;
-
-//     x0 &= 5;
-//     x0 &= x1;
-
-//     x0 |= 5;
-//     x0 |= x1;
-
-//     x0 ^= 5;
-//     x0 ^= x1;
-
-
-//     x0 == x1;
-//     x0 > x1;
-//     x0 >= x1;
-//     x0 < x1;
-//     x0 <= x1;
-
-// }
-
-// int main(){
-//     test_simd<int8_t>();
-//     // test_simd<int16_t>();
-//     // test_simd<uint8_t>();
-//     // test_simd<float>();
-// }
