@@ -3,29 +3,29 @@
 #include <vector>
 #include <numeric>
 
-void seq()
-{
-    typedef svint32_t Vector __attribute__((arm_sve_vector_bits(SVE_LEN)));
-    Vector vec = svdup_s32(5);
-    std::cout << "addv : " << svaddv(svptrue_b32(), vec) << "\n";
+// void seq()
+// {
+//     typedef svint32_t Vector __attribute__((arm_sve_vector_bits(SVE_LEN)));
+//     Vector vec = svdup_s32(5);
+//     std::cout << "addv : " << svaddv(svptrue_b32(), vec) << "\n";
 
-    for (int idx = 0; idx < 4; idx++)
-    {
-        auto index = svptrue_pat_b32(SV_VL1);
-        for (int i = 0; i < idx; i++)
-        {
-            index = svpnext_b32(svptrue_b32(), index);
-        }
-        std::cout << "idx : " << idx << " " <<  svlastb(index, vec) << "\n";
-    }
-}
+//     for (int idx = 0; idx < 4; idx++)
+//     {
+//         auto index = svptrue_pat_b32(SV_VL1);
+//         for (int i = 0; i < idx; i++)
+//         {
+//             index = svpnext_b32(svptrue_b32(), index);
+//         }
+//         std::cout << "idx : " << idx << " " <<  svlastb(index, vec) << "\n";
+//     }
+// }
 
 template <typename T>
 void test()
 {
-    using namespace sve::experimental;
+    using namespace rvv::experimental;
     simd<T> x(5);
-    std::cout << "addv : " << x.addv() << "\n";
+    // std::cout << "addv : " << x.addv() << "\n";
     std::cout << "xlen : " << x.size() << '\n';
     std::cout << "x : " << x << '\n';
     auto tmp = x + 1;
@@ -62,12 +62,14 @@ void test()
 
 int main()
 {
-    seq();
-    test<int>();
-    test<float>();
-    test<double>();
+    // seq();
+    // test<int>();
+    // test<float>();
+    // test<double>();
     test<int8_t>();
+    test<uint8_t>();
     test<int16_t>();
+    test<uint16_t>();
     return 0;
 }
 
