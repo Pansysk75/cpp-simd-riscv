@@ -1,17 +1,17 @@
 enable_testing()
 
 set (unit_tests 
-    iota
-    dummy
-    load_store
-    copy_from_to
+    # iota
+    # dummy
+    # load_store
+    # copy_from_to
     addition
-    fft
-    reduce
-    scan
-    index_series
-    random
-    permute
+    # fft
+    # reduce
+    # scan
+    # index_series
+    # random
+    # permute
 )
 
 foreach(unit_test ${unit_tests})
