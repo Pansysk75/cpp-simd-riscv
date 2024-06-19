@@ -89,6 +89,84 @@ bool test(){
     success &= test_equal(x--, data);
     }
 
+    
+    {
+    std::vector<T> data(simd_size);
+    std::iota(data.begin(), data.end(), 5);
+    simd<T> x(data.data(), vector_aligned);
+    std::cout << "Multiplication" << std::endl;
+    //
+    std::for_each(data.begin(), data.end(), [](auto& elem){ elem *= 5;});
+    x *= 5;
+    success &= test_equal(x, data);
+    //
+    std::for_each(data.begin(), data.end(), [](auto& elem){ elem *= -3;});
+    x = x * (-3);
+    success &= test_equal(x, data);
+    //
+    std::for_each(data.begin(), data.end(), [](auto& elem){ elem *= -1;});
+    success &= test_equal(-x, data);
+    }
+
+    {
+    std::vector<T> data(simd_size);
+    std::iota(data.begin(), data.end(), 120);
+    simd<T> x(data.data(), vector_aligned);
+    std::cout << "Division" << std::endl;
+    //
+    std::for_each(data.begin(), data.end(), [](auto& elem){ elem /= 5;});
+    x /= 5;
+    success &= test_equal(x, data);
+    //
+    std::for_each(data.begin(), data.end(), [](auto& elem){ elem = elem / T(-3);});
+    x = x / (-3);
+    success &= test_equal(x, data);
+    }
+
+    // Bitwise operations only supported for integral types
+    if constexpr(std::is_integral_v<T>)
+    {
+        std::vector<T> data(simd_size);
+        std::iota(data.begin(), data.end(), 5);
+        simd<T> x(data.data(), vector_aligned);
+        std::cout << "Bitwise operations" << std::endl;
+        //
+        std::for_each(data.begin(), data.end(), [](auto& elem){ elem &= 0x03;});
+        x &= 0x03;
+        success &= test_equal(x, data);
+        //
+        std::for_each(data.begin(), data.end(), [](auto& elem){ elem |= 0xF0;});
+        x |= 0xF0;
+        success &= test_equal(x, data);
+        //
+        std::for_each(data.begin(), data.end(), [](auto& elem){ elem ^= 0xFF;});
+        x ^= 0xFF;
+        success &= test_equal(x, data);
+    }
+
+    // {
+    // std::vector<T> data(simd_size);
+    // std::iota(data.begin(), data.end(), 5);
+    // simd<T> x(data.data(), vector_aligned);
+    // std::cout << "Comparison" << std::endl;
+    // //
+    // simd<T> y(x);
+    // success &= (x == y);
+    // success &= !(x != y);
+    // success &= !(x < y);
+    // success &= (x <= y);
+    // success &= !(x > y);
+    // success &= (x >= y);
+    // //
+    // y = simd<T>(data.data(), vector_aligned);
+    // y += 1;
+    // success &= !(x == y);
+    // success &= (x != y);
+    // success &= (x < y);
+    // success &= (x <= y);
+    // success &= !(x > y);
+    // success &= !(x >= y);
+    // }
 
     
     return success;
@@ -102,6 +180,8 @@ int main(){
 
     success &= test<uint8_t>();
     success &= test<uint16_t>();
+
+    success &= test<float>();
 
     return success ? 0 : -1;
 }
