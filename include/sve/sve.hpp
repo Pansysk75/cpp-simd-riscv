@@ -36,6 +36,11 @@ namespace rvv_impl {
     template <SignedSIMD T>
     struct simd_impl_base<T>{
 
+        inline static auto get(auto vec, auto index, size_t size)
+        {
+            return __riscv_vmv_x(__riscv_vslidedown(vec, index, size));
+        }     
+
         inline static auto add(auto x, auto y, size_t size)
         {
             return __riscv_vadd(x, y, size);
@@ -44,6 +49,11 @@ namespace rvv_impl {
         inline static auto sub(auto x, auto y, size_t size)
         {
             return __riscv_vsub(x, y, size);
+        }
+
+        inline static auto multiply(auto x, auto y, size_t size)
+        {
+            return __riscv_vmul(x, y, size);
         }
 
         inline static auto divide(auto x, auto y, size_t size)
@@ -73,6 +83,11 @@ namespace rvv_impl {
     template <UnignedSIMD T>
     struct simd_impl_base<T>{
 
+        inline static auto get(auto vec, auto index, size_t size)
+        {
+            return __riscv_vmv_x(__riscv_vslidedown(vec, index, size));
+        }     
+
         inline static auto add(auto x, auto y, size_t size)
         {
             return __riscv_vadd(x, y, size);
@@ -86,6 +101,11 @@ namespace rvv_impl {
         inline static auto divide(auto x, auto y, size_t size)
         {
             return __riscv_vdivu(x, y, size);
+        }
+
+        inline static auto multiply(auto x, auto y, size_t size)
+        {
+            return __riscv_vmul(x, y, size);
         }
 
         inline static auto greater_than(auto x, auto y, size_t size)
@@ -110,6 +130,11 @@ namespace rvv_impl {
     template <FloatingSIMD T>
     struct simd_impl_base<T>{
 
+        inline static auto get(auto vec, auto index, size_t size)
+        {
+            return __riscv_vfmv_f(__riscv_vslidedown(vec, index, size));
+        }     
+
         inline static auto add(auto x, auto y, size_t size)
         {
             return __riscv_vfadd(x, y, size);
@@ -123,6 +148,11 @@ namespace rvv_impl {
         inline static auto divide(auto x, auto y, size_t size)
         {
             return __riscv_vfdiv(x, y, size);
+        }
+
+        inline static auto multiply(auto x, auto y, size_t size)
+        {
+            return __riscv_vfmul(x, y, size);
         }
 
         inline static auto greater_than(auto x, auto y, size_t size)
@@ -288,8 +318,8 @@ namespace rvv_impl {
                 return __riscv_vmadd(vid, step, vbase, size);
         //     return svindex_s8(base, step);
         }
-
-        inline static const Vector index0123 = __riscv_vreinterpret_v_u8m1_i8m1(__riscv_vid_v_u8m1(size));
+        // TODO: remove index0123 if unused
+        // inline static const Vector index0123 = __riscv_vreinterpret_v_u8m1_i8m1(__riscv_vid_v_u8m1(size));
     };
 
     template <>
@@ -330,7 +360,7 @@ namespace rvv_impl {
                 return __riscv_vmadd(vid, step, vbase, size);
         }
 
-        inline static const Vector index0123 = __riscv_vid_v_u8m1(size);
+        // inline static const Vector index0123 = __riscv_vid_v_u8m1(size);
     };
 
     template <>
@@ -353,11 +383,6 @@ namespace rvv_impl {
             __riscv_vse16(ptr, vec, size);
         }
 
-        // inline static value_t get(Vector vec, size_t idx)
-        // {
-        //     return __riscv_vmv_x(__riscv_vslidedown(vec, idx, size));
-        // }
-
         inline static Vector set(Vector vec, Predicate index, value_t val)
         {
             return __riscv_vmerge_vxm_i16m1(vec, val, index, size);
@@ -374,7 +399,7 @@ namespace rvv_impl {
                                     __riscv_vid_v_u16m1(size));
                 return __riscv_vmadd(vid, step, vbase, size);
         }
-        inline static const Vector index0123 = __riscv_vreinterpret_v_u16m1_i16m1(__riscv_vid_v_u16m1(size));
+        // inline static const Vector index0123 = __riscv_vreinterpret_v_u16m1_i16m1(__riscv_vid_v_u16m1(size));
     };
 
     template <>
@@ -413,7 +438,7 @@ namespace rvv_impl {
                 Vector vid = __riscv_vid_v_u16m1(size);
                 return __riscv_vmadd(vid, step, vbase, size);
         }
-        inline static const Vector index0123 = __riscv_vid_v_u16m1(size);
+        // inline static const Vector index0123 = __riscv_vid_v_u16m1(size);
     };
 
     // template <>
@@ -536,20 +561,35 @@ namespace rvv_impl {
         typedef vbool32_t Predicate __attribute__((riscv_rvv_vector_bits(RVV_LEN / 32)));
         static constexpr std::size_t size = max_vector_pack_size / sizeof(value_t);
 
-        inline static Vector set(Vector vec, Predicate index, float val)
+        template <typename T>
+        inline static Vector load(const T* ptr)
+        {
+            return __riscv_vle32_v_f32m1(ptr, size);
+        }
+
+        template <typename T>
+        inline static void store(Vector vec, T* ptr)
+        {
+            __riscv_vse32(ptr, vec, size);
+        }
+
+
+        inline static Vector set(Vector vec, Predicate index, value_t val)
         {
             return __riscv_vfmerge(vec, val, index, size);
         }
-        // inline static Vector fill(float val)
-        // {
-        //     return svdup_f32(val);
-        // }
+
+        inline static Vector fill(value_t val)
+        {
+            return __riscv_vfmv_v_f_f32m1(val, size);
+        }
+
+        // TODO: remove if unused
         // inline static const float iota_array[16] = {
         //     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
         // inline static const Vector index0123 =
         //     svld1(sve_impl::simd_impl_<sizeof(float)>::all_true(), iota_array);
         // inline static const Vector index0123 = __riscv_viota(rvv_impl::simd_impl_<sizeof(float)>::all_true());
-
     };
 
     // template <>
@@ -721,7 +761,7 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
         using Predicate = typename Impl::Predicate;
         Vector vec;
         static inline constexpr int T_size = sizeof(T);
-        // TODO: Figure out why Predicate (vbool type) is not fixed size
+        // TODO: Remove all_true if unused
         // static inline const Predicate all_true =
         //     rvv_impl::simd_impl_<T_size>::all_true();
 
@@ -806,8 +846,7 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
 
         T operator[](int idx) const
         {
-            return __riscv_vmv_x(__riscv_vslidedown(vec, idx, Impl::size));
-            // return Impl::get(vec, idx);
+            return Impl::get(vec, idx, Impl::size);
             // if (idx < 0 || idx > (int) size())
             //     return -1;
             // return svlasta(svcmplt(all_true, index0123, T(idx)), vec);
@@ -901,7 +940,7 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
         inline simd operator-() const
         {
             auto vec_copy = *this;
-            vec_copy.vec = __riscv_vmul(vec_copy.vec, static_cast<T>(-1), Impl::size);
+            vec_copy.vec = Impl::multiply(vec_copy.vec, static_cast<T>(-1), Impl::size);
             return vec_copy;
         }
 
@@ -910,17 +949,17 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
         // ----------------------------------------------------------------------
         inline friend simd operator+(const simd& x, const simd& y)
         {
-            return __riscv_vadd(x.vec, y.vec, Impl::size);
+            return Impl::add(x.vec, y.vec, Impl::size);
         }
 
         inline friend simd operator-(const simd& x, const simd& y)
         {
-            return __riscv_vsub(x.vec, y.vec, Impl::size);
+            return Impl::sub(x.vec, y.vec, Impl::size);
         }
 
         inline friend simd operator*(const simd& x, const simd& y)
         {
-            return __riscv_vmul(x.vec, y.vec, Impl::size);
+            return Impl::multiply(x.vec, y.vec, Impl::size);
         }
 
         inline friend simd operator/(const simd& x, const simd& y)
@@ -966,19 +1005,19 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
         // ----------------------------------------------------------------------
         inline friend simd& operator+=(simd& x, const simd& y)
         {
-            x.vec = __riscv_vadd(x.vec, y.vec, Impl::size);
+            x.vec = Impl::add(x.vec, y.vec, Impl::size);
             return x;
         }
 
         inline friend simd& operator-=(simd& x, const simd& y)
         {
-            x.vec = __riscv_vsub(x.vec, y.vec, Impl::size);
+            x.vec = Impl::sub(x.vec, y.vec, Impl::size);
             return x;
         }
 
         inline friend simd& operator*=(simd& x, const simd& y)
         {
-            x.vec = __riscv_vmul(x.vec, y.vec, Impl::size);
+            x.vec = Impl::multiply(x.vec, y.vec, Impl::size);
             return x;
         }
 
