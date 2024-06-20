@@ -154,29 +154,50 @@ bool test(){
         success &= test_equal(x, data);
     }
 
-    // {
-    // std::vector<T> data(simd_size);
-    // std::iota(data.begin(), data.end(), 5);
-    // simd<T> x(data.data(), vector_aligned);
-    // std::cout << "Comparison" << std::endl;
-    // //
-    // simd<T> y(x);
-    // success &= (x == y);
-    // success &= !(x != y);
-    // success &= !(x < y);
-    // success &= (x <= y);
-    // success &= !(x > y);
-    // success &= (x >= y);
-    // //
-    // y = simd<T>(data.data(), vector_aligned);
-    // y += 1;
-    // success &= !(x == y);
-    // success &= (x != y);
-    // success &= (x < y);
-    // success &= (x <= y);
-    // success &= !(x > y);
-    // success &= !(x >= y);
-    // }
+    {
+    std::vector<T> data(simd_size);
+    std::iota(data.begin(), data.end(), 5);
+    simd<T> x(data.data(), vector_aligned);
+    std::cout << "Comparison" << std::endl;
+    //
+    simd<T> y(x);
+    success &= (x == y).all_of();
+    success &= (x != y).none_of();
+    success &= (x < y).none_of();
+    success &= (x <= y).all_of();
+    success &= (x > y).none_of();
+    success &= (x >= y).all_of();
+    //
+    y = simd<T>(data.data(), vector_aligned);
+    y += 1;
+    success &= (x == y).none_of();
+    success &= (x != y).all_of();
+    success &= (x < y).all_of();
+    success &= (x <= y).all_of();
+    success &= (x > y).none_of();
+    success &= (x >= y).none_of();
+    }
+
+    // Algorithms
+    {
+    std::vector<T> data(simd_size);
+    std::iota(data.begin(), data.end(), 5);
+    simd<T> x(data.data(), vector_aligned);
+    std::cout << "Algorithms" << std::endl;
+    // Reduce default (std::plus)
+    T sum_vec = std::accumulate(data.begin(), data.end(), T(0));
+    T sum_simd = reduce(x);
+    success &= (sum_vec == sum_simd);
+    std::cout << "sum: " << sum_vec << " x.reduce(): " << sum_simd << std::endl;
+    // Reduce custom
+    auto mul_op = [](auto a, auto b){ return a * b; };
+    T product_vec = std::accumulate(data.begin(), data.end(), T(1), mul_op);
+    T product_simd = reduce(x, mul_op);
+    success &= (product_vec == product_simd);
+    std::cout << "product: " << product_vec << " x.reduce(mul_op): " << product_simd << std::endl;
+    }
+    
+
 
     
     return success;
@@ -185,12 +206,21 @@ bool test(){
 int main(){
     bool success = true;
 
+    std::cout << "\nTesting type: " << "int8_t" << std::endl;
     success &= test<int8_t>();
+    std::cout << "\nTesting type: " << "int16_t" << std::endl;
     success &= test<int16_t>();
+    std::cout << "\nTesting type: " << "int32_t" << std::endl;
+    success &= test<int32_t>();
 
+    std::cout << "\nTesting type: " << "uint8_t" << std::endl;
     success &= test<uint8_t>();
+    std::cout << "\nTesting type: " << "uint16_t" << std::endl;
     success &= test<uint16_t>();
+    std::cout << "\nTesting type: " << "uint32_t" << std::endl;
+    success &= test<uint32_t>();
 
+    std::cout << "\nTesting type: " << "float" << std::endl;
     success &= test<float>();
 
     return success ? 0 : -1;
