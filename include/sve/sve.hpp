@@ -293,11 +293,22 @@ namespace rvv_impl {
             return __riscv_vle8_v_i8m1(ptr, size);
         }
 
+        inline static const value_t iota_array[16] = {
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+        inline static const Vector index0123 = load(iota_array);
+
         template <typename T>
         inline static void store(Vector vec, T* ptr)
         {
             __riscv_vse8(ptr, vec, size);
         }
+
+        inline static Vector set(Vector vec, size_t index, value_t val)
+        {
+            Predicate mask = __riscv_vmseq(index0123, index, size);
+            return __riscv_vmerge(vec, val, mask, size);
+        }
+
 
         inline static Vector set(Vector vec, Predicate index, value_t val)
         {
@@ -309,17 +320,17 @@ namespace rvv_impl {
              return __riscv_vmv_v_x_i8m1(val, size);
         }
 
-        inline static Vector index_series(value_t base, value_t step)
-        {
+        // inline static Vector index_series(value_t base, value_t step)
+        // {
     
-                Vector vbase = fill(base);
-                Vector vid = __riscv_vreinterpret_v_u8m1_i8m1(
-                                    __riscv_vid_v_u8m1(size));
-                return __riscv_vmadd(vid, step, vbase, size);
-        //     return svindex_s8(base, step);
-        }
-        // TODO: remove index0123 if unused
-        // inline static const Vector index0123 = __riscv_vreinterpret_v_u8m1_i8m1(__riscv_vid_v_u8m1(size));
+        //         Vector vbase = fill(base);
+        //         Vector vid = __riscv_vreinterpret_v_u8m1_i8m1(
+        //                             __riscv_vid_v_u8m1(size));
+        //         return __riscv_vmadd(vid, step, vbase, size);
+        // //     return svindex_s8(base, step);
+        // }
+
+        // inline static const Vector index0123 = index_series(value_t(0), value_t(1));
     };
 
     template <>
@@ -330,11 +341,24 @@ namespace rvv_impl {
         typedef vbool8_t Predicate __attribute__((riscv_rvv_vector_bits(RVV_LEN / 8)));
         static constexpr std::size_t size = max_vector_pack_size / sizeof(value_t);
 
+        // inline static Vector index_series(value_t base, value_t step)
+        // {
+        //     Vector vbase = fill(base);
+        //     Vector vid = __riscv_vid_v_u8m1(size);
+        //     return __riscv_vmadd(vid, step, vbase, size);
+        // }
+
+        // inline static const Vector index0123 = index_series(value_t(0), value_t(1));
+
         template <typename T>
         inline static Vector load(const T* ptr)
         {
             return __riscv_vle8_v_u8m1(ptr, size);
         }
+
+        inline static const value_t iota_array[16] = {
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+        inline static const Vector index0123 = load(iota_array);
 
         template <typename T>
         inline static void store(Vector vec, T* ptr)
@@ -342,25 +366,17 @@ namespace rvv_impl {
             __riscv_vse8(ptr, vec, size);
         }
 
-        inline static Vector set(Vector vec, Predicate index, value_t val)
+        inline static Vector set(Vector vec, size_t index, value_t val)
         {
-            return __riscv_vmerge_vxm_u8m1(vec, val, index, size);
+            Predicate mask = __riscv_vmseq(index0123, index, size);
+            return __riscv_vmerge(vec, val, mask, size);
         }
- 
+
       inline static Vector fill(value_t val)
         {
              return __riscv_vmv_v_x_u8m1(val, size);
         }
 
-        inline static Vector index_series(value_t base, value_t step)
-        {
-    
-                Vector vbase = fill(base);
-                Vector vid = __riscv_vid_v_u8m1(size);
-                return __riscv_vmadd(vid, step, vbase, size);
-        }
-
-        // inline static const Vector index0123 = __riscv_vid_v_u8m1(size);
     };
 
     template <>
@@ -377,29 +393,35 @@ namespace rvv_impl {
             return __riscv_vle16_v_i16m1(ptr, size);
         }
 
+        inline static const value_t iota_array[16] = {
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+        inline static const Vector index0123 = load(iota_array);
+
         template <typename T>
         inline static void store(Vector vec, T* ptr)
         {
             __riscv_vse16(ptr, vec, size);
         }
 
-        inline static Vector set(Vector vec, Predicate index, value_t val)
+        inline static Vector set(Vector vec, size_t index, value_t val)
         {
-            return __riscv_vmerge_vxm_i16m1(vec, val, index, size);
+            Predicate mask = __riscv_vmseq(index0123, index, size);
+            return __riscv_vmerge(vec, val, mask, size);
         }
+
  
       inline static Vector fill(value_t val)
         {
              return __riscv_vmv_v_x_i16m1(val, size);
         }
-        inline static Vector index_series(value_t base, value_t step)
-        {
-                Vector vbase = fill(base);
-                Vector vid = __riscv_vreinterpret_v_u16m1_i16m1(
-                                    __riscv_vid_v_u16m1(size));
-                return __riscv_vmadd(vid, step, vbase, size);
-        }
-        // inline static const Vector index0123 = __riscv_vreinterpret_v_u16m1_i16m1(__riscv_vid_v_u16m1(size));
+        // inline static Vector index_series(value_t base, value_t step)
+        // {
+        //         Vector vbase = fill(base);
+        //         Vector vid = __riscv_vreinterpret_v_u16m1_i16m1(
+        //                             __riscv_vid_v_u16m1(size));
+        //         return __riscv_vmadd(vid, step, vbase, size);
+        // }
+        // inline static const Vector index0123 = index_series(value_t(0), value_t(1));
     };
 
     template <>
@@ -416,29 +438,35 @@ namespace rvv_impl {
             return __riscv_vle16_v_u16m1(ptr, size);
         }
 
+        inline static const value_t iota_array[16] = {
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+        inline static const Vector index0123 = load(iota_array);
+
         template <typename T>
         inline static void store(Vector vec, T* ptr)
         {
             __riscv_vse16(ptr, vec, size);
         }
 
-        inline static Vector set(Vector vec, Predicate index, value_t val)
+        inline static Vector set(Vector vec, size_t index, value_t val)
         {
-            return __riscv_vmerge_vxm_u16m1(vec, val, index, size);
+            Predicate mask = __riscv_vmseq(index0123, index, size);
+            return __riscv_vmerge(vec, val, mask, size);
         }
+
  
         inline static Vector fill(value_t val)
         {
              return __riscv_vmv_v_x_u16m1(val, size);
         }
-        inline static Vector index_series(value_t base, value_t step)
-        {
+        // inline static Vector index_series(value_t base, value_t step)
+        // {
     
-                Vector vbase = fill(base);
-                Vector vid = __riscv_vid_v_u16m1(size);
-                return __riscv_vmadd(vid, step, vbase, size);
-        }
-        // inline static const Vector index0123 = __riscv_vid_v_u16m1(size);
+        //         Vector vbase = fill(base);
+        //         Vector vid = __riscv_vid_v_u16m1(size);
+        //         return __riscv_vmadd(vid, step, vbase, size);
+        // }
+        // inline static const Vector index0123 = index_series(value_t(0), value_t(1));
     };
 
     // template <>
@@ -567,6 +595,10 @@ namespace rvv_impl {
             return __riscv_vle32_v_f32m1(ptr, size);
         }
 
+        inline static const value_t iota_array[16] = {
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+        inline static const Vector index0123 = load(iota_array);
+
         template <typename T>
         inline static void store(Vector vec, T* ptr)
         {
@@ -574,22 +606,18 @@ namespace rvv_impl {
         }
 
 
-        inline static Vector set(Vector vec, Predicate index, value_t val)
+        inline static Vector set(Vector vec, size_t index, value_t val)
         {
-            return __riscv_vfmerge(vec, val, index, size);
+            Predicate mask = __riscv_vmfeq(index0123, value_t(index), size);
+            return __riscv_vfmerge(vec, val, mask, size);
         }
+
 
         inline static Vector fill(value_t val)
         {
             return __riscv_vfmv_v_f_f32m1(val, size);
         }
 
-        // TODO: remove if unused
-        // inline static const float iota_array[16] = {
-        //     0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-        // inline static const Vector index0123 =
-        //     svld1(sve_impl::simd_impl_<sizeof(float)>::all_true(), iota_array);
-        // inline static const Vector index0123 = __riscv_viota(rvv_impl::simd_impl_<sizeof(float)>::all_true());
     };
 
     // template <>
@@ -837,7 +865,7 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
         // ----------------------------------------------------------------------
         T get(int idx) const
         {
-            return __riscv_vmv_x(__riscv_vslidedown(vec, idx, Impl::size));
+            return Impl::get(vec, idx, Impl::size);
             // return Impl::get(vec, idx);
             // if (idx < 0 || idx > (int) size())
             //     return -1;
@@ -852,13 +880,14 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
             // return svlasta(svcmplt(all_true, index0123, T(idx)), vec);
         }
 
-//         void set(int idx, T val)
-//         {
-//             if (idx < 0 || idx > (int) size())
-//                 return;
-//             vec = sve_impl::simd_impl<value_type>::set(
-//                 vec, svcmpeq(all_true, index0123, T(idx)), val);
-//         }
+        void set(int idx, T val)
+        {
+            vec = Impl::set(vec, idx, val);
+            // if (idx < 0 || idx > (int) size())
+            //     return;
+            // vec = sve_impl::simd_impl<value_type>::set(
+            //     vec, svcmpeq(all_true, index0123, T(idx)), val);
+        }
 
         // ----------------------------------------------------------------------
         // ostream overload

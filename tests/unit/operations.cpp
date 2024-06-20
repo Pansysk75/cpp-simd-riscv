@@ -48,6 +48,16 @@ bool test(){
     x = simd<T>(42);
     success &= test_equal(x, data);
 
+    std::cout << "simd set - get" << std::endl;
+    for(int i = 0; i < simd_size; i++){
+        T val = 2*i + 42;
+        x.set(i, val);
+        success &= (x.get(i) == val);
+        success &= (x[i] == val);
+        std::cout << "val: " << val << " x.get(i): " << x.get(i) << " x[i]: " << x[i] << std::endl;
+    }
+    std::cout << std::endl;
+
     }
 
     {
