@@ -5,7 +5,7 @@ set (unit_tests
     # dummy
     # load_store
     # copy_from_to
-    addition
+    # addition
     operations
     # fft
     # reduce

@@ -39,7 +39,9 @@ namespace rvv_impl {
         inline static auto get(auto vec, auto index, size_t size)
         {
             return __riscv_vmv_x(__riscv_vslidedown(vec, index, size));
-        }     
+        }
+
+        // Arithmetic Operations
 
         inline static auto add(auto x, auto y, size_t size)
         {
@@ -61,6 +63,33 @@ namespace rvv_impl {
             return __riscv_vdiv(x, y, size);
         }
 
+        // Reduction Operations
+        template <typename U>
+        inline static T reduce_sum(U x, size_t size)
+        {
+            return __riscv_vmv_x(__riscv_vredsum(x, U(), size));
+        }
+
+        inline static T reduce_min(auto x, size_t size)
+        {
+            return __riscv_vmv_x(__riscv_vredmin(x, x, size));
+        }
+
+        inline static T reduce_max(auto x, size_t size)
+        {
+            return __riscv_vmv_x(__riscv_vredmax(x, x, size));
+        }
+
+        // Comparison Operations
+
+        inline static auto equal(auto x, auto y, size_t size)
+        {
+            return __riscv_vmseq(x, y, size);
+        }
+        inline static auto not_equal(auto x, auto y, size_t size)
+        {
+            return __riscv_vmsne(x, y, size);
+        }
         inline static auto greater_than(auto x, auto y, size_t size)
         {
             return __riscv_vmsgt(x, y, size);
@@ -86,7 +115,9 @@ namespace rvv_impl {
         inline static auto get(auto vec, auto index, size_t size)
         {
             return __riscv_vmv_x(__riscv_vslidedown(vec, index, size));
-        }     
+        }
+
+        // Arithmetic Operations
 
         inline static auto add(auto x, auto y, size_t size)
         {
@@ -107,7 +138,34 @@ namespace rvv_impl {
         {
             return __riscv_vmul(x, y, size);
         }
+        
+        // Reduction Operations
+        template <typename U>
+        inline static T reduce_sum(U x, size_t size)
+        {
+            return __riscv_vmv_x(__riscv_vredsum(x, U(), size));
+        }
 
+        inline static T reduce_min(auto x, size_t size)
+        {
+            return __riscv_vmv_x(__riscv_vredumin(x, x, size));
+        }
+
+        inline static T reduce_max(auto x, size_t size)
+        {
+            return __riscv_vmv_x(__riscv_vredumax(x, x, size));
+        }
+
+        // Comparison Operations
+
+        inline static auto equal(auto x, auto y, size_t size)
+        {
+            return __riscv_vmseq(x, y, size);
+        }
+        inline static auto not_equal(auto x, auto y, size_t size)
+        {
+            return __riscv_vmsne(x, y, size);
+        }
         inline static auto greater_than(auto x, auto y, size_t size)
         {
             return __riscv_vmsgtu(x, y, size);
@@ -133,7 +191,9 @@ namespace rvv_impl {
         inline static auto get(auto vec, auto index, size_t size)
         {
             return __riscv_vfmv_f(__riscv_vslidedown(vec, index, size));
-        }     
+        }
+
+        // Arithmetic Operations
 
         inline static auto add(auto x, auto y, size_t size)
         {
@@ -155,6 +215,34 @@ namespace rvv_impl {
             return __riscv_vfmul(x, y, size);
         }
 
+        // Reduction Operations
+
+        template <typename U>
+        inline static T reduce_sum(U x, size_t size)
+        {
+            return __riscv_vfmv_f(__riscv_vfredusum(x, U(), size));
+        }
+
+        inline static T reduce_min(auto x, size_t size)
+        {
+            return __riscv_vfmv_f(__riscv_vfredmin(x, x, size));
+        }
+
+        inline static T reduce_max(auto x, size_t size)
+        {
+            return __riscv_vfmv_f(__riscv_vfredmax(x, x, size));
+        }
+
+        // Comparison Operations
+
+        inline static auto equal(auto x, auto y, size_t size)
+        {
+            return __riscv_vmfeq(x, y, size);
+        }
+        inline static auto not_equal(auto x, auto y, size_t size)
+        {
+            return __riscv_vmfne(x, y, size);
+        }
         inline static auto greater_than(auto x, auto y, size_t size)
         {
             return __riscv_vmfgt(x, y, size);
@@ -191,47 +279,47 @@ namespace rvv_impl {
     {
     };
 
-    // template <>
-    // struct simd_impl_<1>
-    // {
-    //     inline static auto all_true()
-    //     {
-    //         return svptrue_b8();
-    //     }
-    //     inline static auto first_true()
-    //     {
-    //         return svptrue_pat_b8(SV_VL1);
-    //     }
-    //     inline static auto next_true(auto curr_true)
-    //     {
-    //         return svpnext_b8(svptrue_b8(), curr_true);
-    //     }
-    //     inline static auto count(auto pred)
-    //     {
-    //         return svcntp_b8(svptrue_b8(), pred);
-    //     }
-    // };
+    template <>
+    struct simd_impl_<1>
+    {
+        // inline static auto all_true()
+        // {
+        //     return svptrue_b8();
+        // }
+        // inline static auto first_true()
+        // {
+        //     return svptrue_pat_b8(SV_VL1);
+        // }
+        // inline static auto next_true(auto curr_true)
+        // {
+        //     return svpnext_b8(svptrue_b8(), curr_true);
+        // }
+        inline static auto count(auto pred, size_t size)
+        {
+            return __riscv_vcpop(pred, size);
+        }
+    };
 
-    // template <>
-    // struct simd_impl_<2>
-    // {
-    //     inline static auto all_true()
-    //     {
-    //         return svptrue_b16();
-    //     }
-    //     inline static auto first_true()
-    //     {
-    //         return svptrue_pat_b16(SV_VL1);
-    //     }
-    //     inline static auto next_true(auto curr_true)
-    //     {
-    //         return svpnext_b16(svptrue_b16(), curr_true);
-    //     }
-    //     inline static auto count(auto pred)
-    //     {
-    //         return svcntp_b16(svptrue_b16(), pred);
-    //     }
-    // };
+    template <>
+    struct simd_impl_<2>
+    {
+        // inline static auto all_true()
+        // {
+        //     return svptrue_b16();
+        // }
+        // inline static auto first_true()
+        // {
+        //     return svptrue_pat_b16(SV_VL1);
+        // }
+        // inline static auto next_true(auto curr_true)
+        // {
+        //     return svpnext_b16(svptrue_b16(), curr_true);
+        // }
+        inline static auto count(auto pred, size_t size)
+        {
+            return __riscv_vcpop(pred, size);
+        }
+    };
 
     template <>
     struct simd_impl_<4>
@@ -249,10 +337,10 @@ namespace rvv_impl {
         // {
         //     return svpnext_b32(svptrue_b32(), curr_true);
         // }
-        // inline static auto count(auto pred)
-        // {
-        //     return svcntp_b32(svptrue_b32(), pred);
-        // }
+        inline static auto count(auto pred, size_t size)
+        {
+            return __riscv_vcpop(pred, size);
+        }
     };
 
     template <>
@@ -272,10 +360,10 @@ namespace rvv_impl {
         // {
         //     return svpnext_b64(svptrue_b64(), curr_true);
         // }
-        // inline static auto count(auto pred)
-        // {
-        //     return svcntp_b64(svptrue_b64(), pred);
-        // }
+        inline static auto count(auto pred, size_t size)
+        {
+            return __riscv_vcpop(pred, size);
+        }
     };
 
     // ----------------------------------------------------------------------
@@ -468,51 +556,78 @@ namespace rvv_impl {
         // }
         // inline static const Vector index0123 = index_series(value_t(0), value_t(1));
     };
+    template <>
+    struct simd_impl<int32_t> : simd_impl_base<int32_t>
+    {
+        using value_t = int32_t;
+        typedef vint32m1_t Vector __attribute__((riscv_rvv_vector_bits(RVV_LEN)));
+        typedef vbool32_t Predicate __attribute__((riscv_rvv_vector_bits(RVV_LEN / 32)));
+        static constexpr std::size_t size = max_vector_pack_size / sizeof(value_t);
 
-    // template <>
-    // struct simd_impl<int32_t>
-    // {
-    //     using T = int32_t;
-    //     typedef svint32_t Vector __attribute__((arm_sve_vector_bits(SVE_LEN)));
-    //     static constexpr std::size_t size = max_vector_pack_size / sizeof(T);
+        template <typename T>
+        inline static Vector load(const T* ptr)
+        {
+            return __riscv_vle32_v_i32m1(ptr, size);
+        }
 
-    //     inline static Vector set(Vector vec, Predicate index, T val)
-    //     {
-    //         return svdup_s32_m(vec, index, val);
-    //     }
-    //     inline static Vector fill(T val)
-    //     {
-    //         return svdup_s32(val);
-    //     }
-    //     inline static Vector index_series(T base, T step)
-    //     {
-    //         return svindex_s32(base, step);
-    //     }
-    //     inline static const Vector index0123 = svindex_s32(T(0), T(1));
-    // };
+        inline static const value_t iota_array[16] = {
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+        inline static const Vector index0123 = load(iota_array);
 
-    // template <>
-    // struct simd_impl<uint32_t>
-    // {
-    //     using T = uint32_t;
-    //     typedef svuint32_t Vector __attribute__((arm_sve_vector_bits(SVE_LEN)));
-    //     static constexpr std::size_t size = max_vector_pack_size / sizeof(T);
+        template <typename T>
+        inline static void store(Vector vec, T* ptr)
+        {
+            __riscv_vse32(ptr, vec, size);
+        }
 
-    //     inline static Vector set(Vector vec, Predicate index, T val)
-    //     {
-    //         return svdup_u32_m(vec, index, val);
-    //     }
-    //     inline static Vector fill(T val)
-    //     {
-    //         return svdup_u32(val);
-    //     }
-    //     inline static Vector index_series(T base, T step)
-    //     {
-    //         return svindex_u32(base, step);
-    //     }
-    //     inline static const Vector index0123 = svindex_u32(T(0), T(1));
-    // };
+        inline static Vector set(Vector vec, size_t index, value_t val)
+        {
+            Predicate mask = __riscv_vmseq(index0123, index, size);
+            return __riscv_vmerge(vec, val, mask, size);
+        }
 
+        inline static Vector fill(value_t val)
+        {
+            return __riscv_vmv_v_x_i32m1(val, size);
+        }
+    };
+
+    template <>
+    struct simd_impl<uint32_t> : simd_impl_base<uint32_t>
+    {
+        using value_t = uint32_t;
+        typedef vuint32m1_t Vector __attribute__((riscv_rvv_vector_bits(RVV_LEN)));
+        typedef vbool32_t Predicate __attribute__((riscv_rvv_vector_bits(RVV_LEN / 32)));
+        static constexpr std::size_t size = max_vector_pack_size / sizeof(value_t);
+
+        template <typename T>
+        inline static Vector load(const T* ptr)
+        {
+            return __riscv_vle32_v_u32m1(ptr, size);
+        }
+
+        inline static const value_t iota_array[16] = {
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+        inline static const Vector index0123 = load(iota_array);
+
+        template <typename T>
+        inline static void store(Vector vec, T* ptr)
+        {
+            __riscv_vse32(ptr, vec, size);
+        }
+
+        inline static Vector set(Vector vec, size_t index, value_t val)
+        {
+            Predicate mask = __riscv_vmseq(index0123, index, size);
+            return __riscv_vmerge(vec, val, mask, size);
+        }
+
+        inline static Vector fill(value_t val)
+        {
+             return __riscv_vmv_v_x_u32m1(val, size);
+        }
+
+    };
     // template <>
     // struct simd_impl<int64_t>
     // {
@@ -798,8 +913,8 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
         using abi_type = Abi;
         using mask_type = simd_mask<T, Abi>;
 
-        // static inline const Vector index0123 =
-        //     Impl::index0123;
+        static inline const Vector index0123 =
+            Impl::index0123;
 
         static inline constexpr std::size_t size()
         {
@@ -865,28 +980,23 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
         // ----------------------------------------------------------------------
         T get(int idx) const
         {
-            return Impl::get(vec, idx, Impl::size);
-            // return Impl::get(vec, idx);
             // if (idx < 0 || idx > (int) size())
             //     return -1;
-            // return svlasta(svcmplt(all_true, index0123, T(idx)), vec);
+            return Impl::get(vec, idx, Impl::size);
         }
 
         T operator[](int idx) const
         {
-            return Impl::get(vec, idx, Impl::size);
             // if (idx < 0 || idx > (int) size())
             //     return -1;
-            // return svlasta(svcmplt(all_true, index0123, T(idx)), vec);
+            return Impl::get(vec, idx, Impl::size);
         }
 
         void set(int idx, T val)
         {
-            vec = Impl::set(vec, idx, val);
             // if (idx < 0 || idx > (int) size())
             //     return;
-            // vec = sve_impl::simd_impl<value_type>::set(
-            //     vec, svcmpeq(all_true, index0123, T(idx)), val);
+            vec = Impl::set(vec, idx, val);
         }
 
         // ----------------------------------------------------------------------
@@ -911,13 +1021,24 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
             return os;
         }
 
-//         // ----------------------------------------------------------------------
-//         //  Reduction
-//         // ----------------------------------------------------------------------
-//         inline auto addv() const
-//         {
-//             return svaddv(all_true, vec);
-//         }
+        // ----------------------------------------------------------------------
+        //  Reduction
+        // ----------------------------------------------------------------------
+        // TODO: These don't need to be public
+        inline auto reduce_sum() const
+        {
+            return Impl::reduce_sum(vec, Impl::size);
+        }
+
+        inline auto reduce_min() const
+        {
+            return Impl::reduce_min(vec, Impl::size);
+        }
+
+        inline auto reduce_max() const
+        {
+            return Impl::reduce_max(vec, Impl::size);
+        }
 
 //         // ----------------------------------------------------------------------
 //         //  First and last elements
@@ -1097,12 +1218,12 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
         // ----------------------------------------------------------------------
         inline friend mask_type operator==(const simd& x, const simd& y)
         {
-            return __riscv_vmseq(x.vec, y.vec, Impl::size);
+            return Impl::equal(x.vec, y.vec, Impl::size);
         }
 
         inline friend mask_type operator!=(const simd& x, const simd& y)
         {
-            return __riscv_vmsne(x.vec, y.vec, Impl::size);
+            return Impl::not_equal(x.vec, y.vec, Impl::size);
         }
 
         inline friend mask_type operator>=(const simd& x, const simd& y)
@@ -1173,8 +1294,8 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
 //         inline friend simd<T_, Abi_> fma(const simd<T_, Abi_>& a,
 //             const simd<T_, Abi_>& b, const simd<T_, Abi_>& z);
 
-//         template <typename T_, typename Abi_, typename Op>
-//         inline friend T_ reduce(const simd<T_, Abi_>& x, Op op);
+        template <typename T_, typename Abi_, typename Op>
+        inline friend T_ reduce(const simd<T_, Abi_>& x, Op op);
 
 //         template <typename T_, typename Abi_, typename Op>
 //         inline friend simd<T_, Abi_> inclusive_scan(
@@ -1282,20 +1403,44 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
 //         return svmad_m(a.all_true, a.vec, b.vec, z.vec);
 //     }
 
-//     template <typename T, typename Abi, typename Op = std::plus<>>
-//     inline T reduce(const simd<T, Abi>& x, Op op = {})
-//     {
-//         using simd_t = simd<T, Abi>;
-//         auto x_vec = x.vec;
+    template <typename T, typename Abi, typename Op = std::plus<>>
+    inline T reduce(const simd<T, Abi>& x, Op op = {})
+    {
+        if constexpr (std::is_same_v<Op, std::plus<>>)
+        {
+            return x.reduce_sum();
+        }
+        else
+        {      
+            using unsigned_T = std::conditional_t<sizeof(T) == 1, uint8_t,
+                            std::conditional_t<sizeof(T) == 2, uint16_t,
+                            std::conditional_t<sizeof(T) == 4, uint32_t, 
+                            std::conditional_t<sizeof(T) == 8, uint64_t, void>>>>;
 
-//         for (std::size_t i = 1; i < simd_t::size(); i *= 2)
-//         {
-//             x_vec =
-//                 op(simd_t(svzip1(x_vec, x_vec)), simd_t(svzip2(x_vec, x_vec)))
-//                     .vec;
-//         }
-//         return simd_t(x_vec).first();
-//     }
+            static_assert(!std::is_same_v<unsigned_T, void>, "Unsupported type for reduce operation");
+
+            using unsigned_simd_t = simd<unsigned_T, Abi>;
+            // Create indices [0,0,1,1,2,2...size/2 - 1] for gather operation
+            unsigned_simd_t dup_ind_low = (unsigned_simd_t::index0123)/2;
+            // Create indices [size/2, size/2, ... size-1]
+            unsigned_simd_t dup_ind_high = dup_ind_low + unsigned_T(unsigned_simd_t::size())/2;
+
+            using simd_t = simd<T, Abi>;
+            auto x_vec = x.vec;
+
+            for (std::size_t i = 1; i < simd_t::size(); i *= 2)
+            {
+                x_vec =
+                    op(simd_t(__riscv_vrgather(x_vec, dup_ind_low.vec, simd_t::size())), 
+                    simd_t(__riscv_vrgather(x_vec, dup_ind_high.vec, simd_t::size()))
+                    ).vec;
+            }
+
+            return simd_t(x_vec).get(0);
+        }
+    }
+
+
 
 //     template <typename T_, typename Abi_, typename Op = std::plus<>>
 //     inline simd<T_, Abi_> inclusive_scan(const simd<T_, Abi_>& x, Op op = {})
@@ -1423,7 +1568,7 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
         using simd_type = simd<T, Abi>;
         using abi_type = Abi;
 
-        // static inline const auto index0123 = simd_type::index0123;
+        static inline const auto index0123 = simd_type::index0123;
         static inline constexpr std::size_t size()
         {
             return simd<T, Abi>::size();
@@ -1452,52 +1597,53 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
             pred = p;
         }
 
-//         // ----------------------------------------------------------------------
-//         //  get and set
-//         // ----------------------------------------------------------------------
-//         bool get(int idx) const
-//         {
-//             if (idx < 0 || idx > (int) size())
-//                 return -1;
+        // ----------------------------------------------------------------------
+        //  get and set
+        // ----------------------------------------------------------------------
+        bool get(int idx) const
+        {
+            if (idx < 0 || idx > (int) size())
+                return -1;
 
-//             return sve_impl::simd_impl_<T_size>::count(
-//                 svand_z(all_true, svcmpeq(all_true, index0123, T(idx)), pred));
-//         }
+            auto index_mask = index0123==simd_type(T(idx));
+            return rvv_impl::simd_impl_<T_size>::count(
+                __riscv_vmand(pred, index_mask.pred, size()), size());
+        }
 
-//         bool operator[](int idx) const
-//         {
-//             return get(idx);
-//         }
+        bool operator[](int idx) const
+        {
+            return get(idx);
+        }
 
-//         void set(int idx, bool val)
-//         {
-//             if (idx < 0 || idx > (int) size())
-//                 return;
+        // void set(int idx, bool val)
+        // {
+        //     if (idx < 0 || idx > (int) size())
+        //         return;
 
-//             auto index = svcmpeq(all_true, index0123, T(idx));
-//             if (val)
-//                 pred = svorr_z(all_true, pred, index);
-//             else
-//                 pred = svbic_z(all_true, pred, index);
-//         }
+        //     auto index = svcmpeq(all_true, index0123, T(idx));
+        //     if (val)
+        //         pred = svorr_z(all_true, pred, index);
+        //     else
+        //         pred = svbic_z(all_true, pred, index);
+        // }
 
-//         // ----------------------------------------------------------------------
-//         // ostream overload
-//         // ----------------------------------------------------------------------
-//         friend std::ostream& operator<<(std::ostream& os, const simd_mask& x)
-//         {
-//             using type_ = std::decay_t<decltype(x)>;
-//             using simd_type_ = typename type_::simd_type;
-//             using value_type_ = typename simd_type::value_type;
+        // ----------------------------------------------------------------------
+        // ostream overload
+        // ----------------------------------------------------------------------
+        friend std::ostream& operator<<(std::ostream& os, const simd_mask& x)
+        {
+            using type_ = std::decay_t<decltype(x)>;
+            using simd_type_ = typename type_::simd_type;
+            using value_type_ = typename simd_type::value_type;
 
-//             os << "( ";
-//             for (int i = 0; i < (int) x.size(); i++)
-//             {
-//                 os << x[i] << ' ';
-//             }
-//             os << ")";
-//             return os;
-//         }
+            os << "( ";
+            for (int i = 0; i < (int) x.size(); i++)
+            {
+                os << x[i] << ' ';
+            }
+            os << ")";
+            return os;
+        }
 
 //         // ----------------------------------------------------------------------
 //         //  unary operators
@@ -1579,34 +1725,34 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
 //             return sveor_z(x.all_true, x.pred, y.pred);
 //         }
 
-//         // ----------------------------------------------------------------------
-//         //  algorithms
-//         // ----------------------------------------------------------------------
-//         inline int popcount() const
-//         {
-//             return sve_impl::simd_impl_<T_size>::count(pred);
-//         }
+        // ----------------------------------------------------------------------
+        //  algorithms
+        // ----------------------------------------------------------------------
+        inline int popcount() const
+        {
+            return rvv_impl::simd_impl_<T_size>::count(pred, size());
+        }
 
-//         inline bool all_of() const
-//         {
-//             return popcount() == (int) size();
-//         }
+        inline bool all_of() const
+        {
+            return popcount() == (int) size();
+        }
 
-//         inline bool any_of() const
-//         {
-//             return popcount() > 0;
-//         }
+        inline bool any_of() const
+        {
+            return popcount() > 0;
+        }
 
-//         inline bool none_of() const
-//         {
-//             return popcount() != (int) size();
-//         }
+        inline bool none_of() const
+        {
+            return popcount() != (int) size();
+        }
 
-//         inline bool some_of() const
-//         {
-//             int c = popcount();
-//             return (c > 0) && (c < (int) size());
-//         }
+        inline bool some_of() const
+        {
+            int c = popcount();
+            return (c > 0) && (c < (int) size());
+        }
 
 //         inline int find_first_set() const
 //         {
