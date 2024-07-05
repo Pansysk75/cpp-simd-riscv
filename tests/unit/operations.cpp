@@ -3,6 +3,7 @@
 #include <vector>
 #include <numeric>
 #include <algorithm>
+#include <cmath>
 
 template <typename T>
 bool test_equal(rvv::experimental::simd<T> x, const std::vector<T>& data){
@@ -158,7 +159,7 @@ bool test(){
     std::vector<T> data(simd_size);
     std::iota(data.begin(), data.end(), 5);
     simd<T> x(data.data(), vector_aligned);
-    std::cout << "Comparison" << std::endl;
+    std::cout << "Comparison\n" << std::endl;
     //
     simd<T> y(x);
     success &= (x == y).all_of();
@@ -178,12 +179,53 @@ bool test(){
     success &= (x >= y).none_of();
     }
 
-    // Algorithms
+    // Elementwise Binary Algorithms
+    {
+    std::vector<T> data_x(simd_size), data_y(simd_size), data_res(simd_size);
+    
+    std::iota(data_x.begin(), data_x.end(), 0);
+    std::iota(std::reverse_iterator(data_y.end()), std::reverse_iterator(data_y.begin()), 0);
+
+    simd<T> x(data_x.data(), vector_aligned);
+    simd<T> y(data_y.data(), vector_aligned);
+    simd<T> res(data_res.data(), vector_aligned);
+
+    std::cout << "Elementwise Binary Algorithms" << std::endl;
+    // min
+    std::cout << "max: " << std::endl;
+    std::transform(data_x.begin(), data_x.end(), data_y.begin(), data_res.begin(), [](auto a, auto b){ return std::min(a, b); });
+    success &= test_equal(min(x, y), data_res);
+    // max
+    std::cout << "max: " << std::endl;
+    std::transform(data_x.begin(), data_x.end(), data_y.begin(), data_res.begin(), [](auto a, auto b){ return std::max(a, b); });
+    success &= test_equal(max(x, y), data_res);
+    }
+
+    // Unary Algorithms
     {
     std::vector<T> data(simd_size);
     std::iota(data.begin(), data.end(), 5);
     simd<T> x(data.data(), vector_aligned);
-    std::cout << "Algorithms" << std::endl;
+    std::cout << "Unary Algorithms" << std::endl;
+    // abs
+    if constexpr(std::is_signed_v<T>){
+        std::transform(data.begin(), data.end(), data.begin(), [](const T& a){ return std::abs(a); });
+        success &= test_equal(abs(x), data);
+    }
+    // sqrt
+    if constexpr(std::is_floating_point_v<T>)
+    {
+        std::transform(data.begin(), data.end(), data.begin(), [](auto a){ return std::sqrt(a); });
+        success &= test_equal(sqrt(x), data);
+    }
+    }
+
+    // Reduction algorithms
+    {
+    std::vector<T> data(simd_size);
+    std::iota(data.begin(), data.end(), 5);
+    simd<T> x(data.data(), vector_aligned);
+    std::cout << "Reduction algorithms" << std::endl;
     // Reduce default (std::plus)
     T sum_vec = std::accumulate(data.begin(), data.end(), T(0));
     T sum_simd = reduce(x);
