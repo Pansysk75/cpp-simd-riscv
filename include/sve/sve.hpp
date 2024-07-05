@@ -63,7 +63,18 @@ namespace rvv_impl {
             return __riscv_vdiv(x, y, size);
         }
 
+        inline static auto min(auto x, auto y, size_t size)
+        {
+            return __riscv_vmin(x, y, size);
+        }
+
+        inline static auto max(auto x, auto y, size_t size)
+        {
+            return __riscv_vmax(x, y, size);
+        }
+
         // Reduction Operations
+
         template <typename U>
         inline static T reduce_sum(U x, size_t size)
         {
@@ -137,6 +148,17 @@ namespace rvv_impl {
         inline static auto multiply(auto x, auto y, size_t size)
         {
             return __riscv_vmul(x, y, size);
+        }
+
+        
+        inline static auto min(auto x, auto y, size_t size)
+        {
+            return __riscv_vminu(x, y, size);
+        }
+
+        inline static auto max(auto x, auto y, size_t size)
+        {
+            return __riscv_vmaxu(x, y, size);
         }
         
         // Reduction Operations
@@ -213,6 +235,16 @@ namespace rvv_impl {
         inline static auto multiply(auto x, auto y, size_t size)
         {
             return __riscv_vfmul(x, y, size);
+        }
+
+        inline static auto min(auto x, auto y, size_t size)
+        {
+            return __riscv_vfmin(x, y, size);
+        }
+
+        inline static auto max(auto x, auto y, size_t size)
+        {
+            return __riscv_vfmax(x, y, size);
         }
 
         // Reduction Operations
@@ -1246,23 +1278,6 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
             return Impl::less_than(x.vec, y.vec, Impl::size);
         }
 
-//         // ----------------------------------------------------------------------
-//         // reduction algorithms
-//         // ----------------------------------------------------------------------
-//         inline T sum() const
-//         {
-//             return svaddv(all_true, vec);
-//         }
-
-//         inline T min() const
-//         {
-//             return svminv(all_true, vec);
-//         }
-
-//         inline T max() const
-//         {
-//             return svmaxv(all_true, vec);
-//         }
 
 //     private:
 //         template <typename T_, typename Abi_>
@@ -1273,22 +1288,22 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
 //         inline friend void mask_assign(const simd_mask<T_, Abi_>& msk,
 //             simd<T_, Abi_>& v, const simd<T_, Abi_>& val);
 
-//         template <typename T_, typename Abi_>
-//         inline friend simd<T_, Abi_> min(
-//             const simd<T_, Abi_>& x, const simd<T_, Abi_>& y);
+        template <typename T_, typename Abi_>
+        inline friend simd<T_, Abi_> min(
+            const simd<T_, Abi_>& x, const simd<T_, Abi_>& y);
 
-//         template <typename T_, typename Abi_>
-//         inline friend simd<T_, Abi_> max(
-//             const simd<T_, Abi_>& x, const simd<T_, Abi_>& y);
+        template <typename T_, typename Abi_>
+        inline friend simd<T_, Abi_> max(
+            const simd<T_, Abi_>& x, const simd<T_, Abi_>& y);
 
 //         template <typename t_, typename abi_>
 //         inline friend simd<t_, abi_> copysign(const simd<t_, abi_>& valSrc, const simd<t_, abi_>& signSrc);
 
-//         template <typename T_, typename Abi_>
-//         inline friend simd<T_, Abi_> sqrt(const simd<T_, Abi_>& x);
+        template <typename T_, typename Abi_>
+        inline friend simd<T_, Abi_> sqrt(const simd<T_, Abi_>& x);
 
-//         template <typename T_, typename Abi_>
-//         inline friend simd<T_, Abi_> abs(const simd<T_, Abi_>& x);
+        template <typename T_, typename Abi_>
+        inline friend simd<T_, Abi_> abs(const simd<T_, Abi_>& x);
 
 //         template <typename T_, typename Abi_>
 //         inline friend simd<T_, Abi_> fma(const simd<T_, Abi_>& a,
@@ -1344,26 +1359,24 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
 //         inline friend simd<T_, Abi_> reverse(const simd<T_, Abi_>& x);
     }; //class simd
 
-//     template <typename T, typename Abi>
-//     inline simd<T, Abi> min(const simd<T, Abi>& x, const simd<T, Abi>& y)
-//     {
-//         // return svsel(svcmplt(x.all_true, x.vec, y.vec), x.vec, y.vec);
-//         return svmin_z(x.all_true, x.vec, y.vec);
-//     }
+    template <typename T, typename Abi>
+    inline simd<T, Abi> min(const simd<T, Abi>& x, const simd<T, Abi>& y)
+    {
+        return simd<T, Abi>::Impl::min(x.vec, y.vec, x.size());
+    }
 
-//     template <typename T, typename Abi>
-//     inline simd<T, Abi> max(const simd<T, Abi>& x, const simd<T, Abi>& y)
-//     {
-//         // return svsel(svcmpgt(x.all_true, x.vec, y.vec), x.vec, y.vec);
-//         return svmax_z(x.all_true, x.vec, y.vec);
-//     }
+    template <typename T, typename Abi>
+    inline simd<T, Abi> max(const simd<T, Abi>& x, const simd<T, Abi>& y)
+    {
+        return simd<T, Abi>::Impl::max(x.vec, y.vec, x.size());
+    }
 
-//     template <typename T, typename Abi>
-//     inline std::pair<simd<T, Abi>, simd<T, Abi>> minmax(
-//         const simd<T, Abi>& x, const simd<T, Abi>& y)
-//     {
-//         return {min(x, y), max(x, y)};
-//     }
+    template <typename T, typename Abi>
+    inline std::pair<simd<T, Abi>, simd<T, Abi>> minmax(
+        const simd<T, Abi>& x, const simd<T, Abi>& y)
+    {
+        return {min(x, y), max(x, y)};
+    }
 
 //     template <typename T_, typename Abi_>
 //     inline simd<T_, Abi_> copysign(const simd<T_, Abi_>& valSrc, const simd<T_, Abi_>& signSrc) {
@@ -1381,20 +1394,31 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
 //         return svreinterpret_f64(result);
 //     }
 
-//     template <typename T_, typename Abi_>
-//     inline simd<T_, Abi_> sqrt(const simd<T_, Abi_>& x)
-//     {
-//         static_assert(
-//             std::is_floating_point_v<T_> || std::is_same_v<T_, float16_t>,
-//             "sqrt only works this floating point types");
-//         return svsqrt_x(x.all_true, x.vec);
-//     }
+    template <typename T_, typename Abi_>
+    inline simd<T_, Abi_> sqrt(const simd<T_, Abi_>& x)
+    {
+        static_assert(std::is_floating_point_v<T_>, "sqrt only works for floating point types");
+        return __riscv_vfsqrt(x.vec, x.size());
+    }
 
-//     template <typename T_, typename Abi_>
-//     inline simd<T_, Abi_> abs(const simd<T_, Abi_>& x)
-//     {
-//         return svabs_x(x.all_true, x.vec);
-//     }
+    template <typename T_, typename Abi_>
+    inline simd<T_, Abi_> abs(const simd<T_, Abi_>& x)
+    {
+        if constexpr (std::is_floating_point_v<T_>)
+        {
+            return __riscv_vfabs(x.vec, x.size());
+        }
+        else if constexpr (std::is_signed_v<T_>)
+        {
+            using simd_vec_t = simd<T_, Abi_>::Vector;
+            auto lt_zero_mask = __riscv_vmslt(x.vec, 0, x.size()); 
+            return __riscv_vneg(lt_zero_mask, x.vec, x.size()); 
+        } 
+        else
+        {
+            return x;
+        }
+    }
 
 //     template <typename T_, typename Abi_>
 //     inline simd<T_, Abi_> fma(const simd<T_, Abi_>& a, const simd<T_, Abi_>& b,
@@ -1411,7 +1435,8 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
             return x.reduce_sum();
         }
         else
-        {      
+        {
+            // Need unsigned type of same size as T, for index vector in gather operation
             using unsigned_T = std::conditional_t<sizeof(T) == 1, uint8_t,
                             std::conditional_t<sizeof(T) == 2, uint16_t,
                             std::conditional_t<sizeof(T) == 4, uint32_t, 
