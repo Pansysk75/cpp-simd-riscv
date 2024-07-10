@@ -1,6 +1,4 @@
-## sve::experimental::simd header only library for SVE vectorization on A64FX
+## experimental::simd header only library for vectorization on RISC-V
 
-This library contains SIMD API for SVE vectorization that is built on top of `std::experimental::simd` API. It has most of the funcationalities of std::experimental::simd, except a few such as `where()` clause, `operator[]` for indexing the vector registers.
-
-The library is tested on Ookami A64FX nodes with SVE 512 and AWS Gravition 3 cloud instances with SVE 256.
+This library contains SIMD API for RISC-V vectorization based on the idea of `std::experimental::simd` API. It has most basic functionality of std::experimental::simd, but does not strictly follow TS 19570, as the purpose is to experiment with performance.
 
