@@ -314,10 +314,12 @@ namespace rvv_impl {
     template <>
     struct simd_impl_<1>
     {
-        // inline static auto all_true()
-        // {
-        //     return svptrue_b8();
-        // }
+        inline static auto all_true()
+        {
+            // vuint8m1_t a = __riscv_vmv_v_x_u8m1(0u, RVV_LEN/8);
+            // return __riscv_vmseq(a, 0u, RVV_LEN/8);
+            return __riscv_vmseq(vuint8m1_t{}, vuint8m1_t{}, RVV_LEN/8);
+        }
         // inline static auto first_true()
         // {
         //     return svptrue_pat_b8(SV_VL1);
@@ -335,10 +337,11 @@ namespace rvv_impl {
     template <>
     struct simd_impl_<2>
     {
-        // inline static auto all_true()
-        // {
-        //     return svptrue_b16();
-        // }
+        inline static auto all_true()
+        {
+            return __riscv_vmseq(vuint16m1_t{}, vuint16m1_t{}, RVV_LEN/16);
+            // return svptrue_b16();
+        }
         // inline static auto first_true()
         // {
         //     return svptrue_pat_b16(SV_VL1);
@@ -358,7 +361,7 @@ namespace rvv_impl {
     {
         inline static auto all_true()
         {
-            return __riscv_vmseq_vv_u8m1_b8(vuint8m1_t{}, vuint8m1_t{}, 1);
+            return __riscv_vmseq(vuint32m1_t{}, vuint32m1_t{}, RVV_LEN/32);
             // return svptrue_b32();
         }
         // inline static auto first_true()
@@ -380,7 +383,7 @@ namespace rvv_impl {
     {
         inline static auto all_true()
         {
-            return __riscv_vmseq_vv_u8m1_b8(vuint8m1_t{}, vuint8m1_t{}, 1);
+            return __riscv_vmseq(vuint64m1_t{}, vuint64m1_t{}, RVV_LEN/64);
             // return svptrue_b64();
         }
 
@@ -398,6 +401,7 @@ namespace rvv_impl {
         }
     };
 
+    
     // ----------------------------------------------------------------------
     template <>
     struct simd_impl<int8_t> : simd_impl_base<int8_t>
@@ -1614,7 +1618,7 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
                 pred = all_true;
             }
             else
-                pred = __riscv_vnot(all_true);
+                pred = __riscv_vmnot(all_true, size());
         }
 
         inline simd_mask(Predicate p)
@@ -1628,9 +1632,9 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
         bool get(int idx) const
         {
             if (idx < 0 || idx > (int) size())
-                return -1;
+                throw std::out_of_range("index out of range");
 
-            auto index_mask = index0123==simd_type(T(idx));
+            auto index_mask = (index0123==simd_type(T(idx)));
             return rvv_impl::simd_impl_<T_size>::count(
                 __riscv_vmand(pred, index_mask.pred, size()), size());
         }
@@ -1640,17 +1644,17 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
             return get(idx);
         }
 
-        // void set(int idx, bool val)
-        // {
-        //     if (idx < 0 || idx > (int) size())
-        //         return;
+        void set(int idx, bool val)
+        {
+            if (idx < 0 || idx > (int) size())
+                throw std::out_of_range("index out of range");
 
-        //     auto index = svcmpeq(all_true, index0123, T(idx));
-        //     if (val)
-        //         pred = svorr_z(all_true, pred, index);
-        //     else
-        //         pred = svbic_z(all_true, pred, index);
-        // }
+            auto index_mask = (index0123==simd_type(T(idx)));
+            if (val)
+                pred = __riscv_vmor(pred, index_mask.pred, size());
+            else
+                pred = __riscv_vmandn(pred, index_mask.pred, size());
+        }
 
         // ----------------------------------------------------------------------
         // ostream overload
@@ -1670,85 +1674,85 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
             return os;
         }
 
-//         // ----------------------------------------------------------------------
-//         //  unary operators
-//         // ----------------------------------------------------------------------
-//         inline simd_mask operator!() const noexcept
-//         {
-//             return svnot_z(all_true, pred);
-//         }
+        // ----------------------------------------------------------------------
+        //  unary operators
+        // ----------------------------------------------------------------------
+        inline simd_mask operator!() const noexcept
+        {
+            return __riscv_vmnot(pred, size());
+        }
 
-//         // ----------------------------------------------------------------------
-//         //  binary operators
-//         // ----------------------------------------------------------------------
-//         inline friend simd_mask operator&&(
-//             const simd_mask& x, const simd_mask& y) noexcept
-//         {
-//             return svand_z(x.all_true, x.pred, y.pred);
-//         }
+        // ----------------------------------------------------------------------
+        //  binary operators
+        // ----------------------------------------------------------------------
+        inline friend simd_mask operator&&(
+            const simd_mask& x, const simd_mask& y) noexcept
+        {
+            return __riscv_vmand(x.pred, y.pred, size());
+        }
 
-//         inline friend simd_mask operator||(
-//             const simd_mask& x, const simd_mask& y) noexcept
-//         {
-//             return svorr_z(x.all_true, x.pred, y.pred);
-//         }
+        inline friend simd_mask operator||(
+            const simd_mask& x, const simd_mask& y) noexcept
+        {
+            return __riscv_vmor(x.pred, y.pred, size());
+        }
 
-//         inline friend simd_mask operator&(
-//             const simd_mask& x, const simd_mask& y) noexcept
-//         {
-//             return svand_z(x.all_true, x.pred, y.pred);
-//         }
+        inline friend simd_mask operator&(
+            const simd_mask& x, const simd_mask& y) noexcept
+        {
+            return __riscv_vmand(x.pred, y.pred, size());
+        }
 
-//         inline friend simd_mask operator|(
-//             const simd_mask& x, const simd_mask& y) noexcept
-//         {
-//             return svorr_z(x.all_true, x.pred, y.pred);
-//         }
+        inline friend simd_mask operator|(
+            const simd_mask& x, const simd_mask& y) noexcept
+        {
+            return __riscv_vmor(x.pred, y.pred, size());
+        }
 
-//         inline friend simd_mask operator^(
-//             const simd_mask& x, const simd_mask& y) noexcept
-//         {
-//             return sveor_z(x.all_true, x.pred, y.pred);
-//         }
+        inline friend simd_mask operator^(
+            const simd_mask& x, const simd_mask& y) noexcept
+        {
+            return __riscv_vmxor(x.pred, y.pred, size());
+        }
 
-//         // ----------------------------------------------------------------------
-//         // simd_mask compound assignment [simd.mask.cassign]
-//         // ----------------------------------------------------------------------
-//         inline friend simd_mask& operator&=(
-//             simd_mask& x, const simd_mask& y) noexcept
-//         {
-//             x.pred = svand_z(x.all_true, x.pred, y.pred);
-//             return x;
-//         }
+        // ----------------------------------------------------------------------
+        // simd_mask compound assignment [simd.mask.cassign]
+        // ----------------------------------------------------------------------
+        inline friend simd_mask& operator&=(
+            simd_mask& x, const simd_mask& y) noexcept
+        {
+            x.pred = __riscv_vmand(x.pred, y.pred, size());
+            return x;
+        }
 
-//         inline friend simd_mask& operator|=(
-//             simd_mask& x, const simd_mask& y) noexcept
-//         {
-//             x.pred = svorr_z(x.all_true, x.pred, y.pred);
-//             return x;
-//         }
+        inline friend simd_mask& operator|=(
+            simd_mask& x, const simd_mask& y) noexcept
+        {
+            x.pred = __riscv_vmor(x.pred, y.pred, size());
+            return x;
+        }
 
-//         inline friend simd_mask& operator^=(
-//             simd_mask& x, const simd_mask& y) noexcept
-//         {
-//             x.pred = sveor_z(x.all_true, x.pred, y.pred);
-//             return x;
-//         }
+        inline friend simd_mask& operator^=(
+            simd_mask& x, const simd_mask& y) noexcept
+        {
+            x.pred = __riscv_vmxor(x.pred, y.pred, size());
+            return x;
+        }
 
-//         // ----------------------------------------------------------------------
-//         // simd_mask compares [simd.mask.comparison]
-//         // ----------------------------------------------------------------------
-//         inline friend simd_mask operator==(
-//             const simd_mask& x, const simd_mask& y) noexcept
-//         {
-//             return svnot_z(x.all_true, sveor_z(x.all_true, x.pred, y.pred));
-//         }
+        // ----------------------------------------------------------------------
+        // simd_mask compares [simd.mask.comparison]
+        // ----------------------------------------------------------------------
+        inline friend simd_mask operator==(
+            const simd_mask& x, const simd_mask& y) noexcept
+        {
+            return __riscv_vmnor(x.pred, y.pred, size());
+        }
 
-//         inline friend simd_mask operator!=(
-//             const simd_mask& x, const simd_mask& y) noexcept
-//         {
-//             return sveor_z(x.all_true, x.pred, y.pred);
-//         }
+        inline friend simd_mask operator!=(
+            const simd_mask& x, const simd_mask& y) noexcept
+        {
+            return __riscv_vmor(x.pred, y.pred, size());
+        }
 
         // ----------------------------------------------------------------------
         //  algorithms
