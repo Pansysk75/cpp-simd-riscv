@@ -7,6 +7,7 @@ set (unit_tests
     # copy_from_to
     # addition
     operations
+    mask_operations
     # fft
     # reduce
     # scan
