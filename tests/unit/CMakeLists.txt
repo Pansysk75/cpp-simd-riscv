@@ -21,7 +21,7 @@ foreach(unit_test ${unit_tests})
     set(target ${unit_test}_unit_test)
     add_executable(${target} ${unit_test}.cpp)
 
-    target_link_libraries(${target} sve)
+    target_link_libraries(${target} rvv)
 
     add_test(NAME ${target} COMMAND ${CMAKE_CROSSCOMPILING_CMD} ${target})
 endforeach()
