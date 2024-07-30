@@ -1283,14 +1283,14 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
         }
 
 
-//     private:
-//         template <typename T_, typename Abi_>
-//         inline friend simd<T_, Abi_> choose(const simd_mask<T_, Abi_>& msk,
-//             const simd<T_, Abi_>& t, const simd<T_, Abi_>& f);
+    private:
+        template <typename T_, typename Abi_>
+        inline friend simd<T_, Abi_> choose(const simd_mask<T_, Abi_>& msk,
+            const simd<T_, Abi_>& t, const simd<T_, Abi_>& f);
 
-//         template <typename T_, typename Abi_>
-//         inline friend void mask_assign(const simd_mask<T_, Abi_>& msk,
-//             simd<T_, Abi_>& v, const simd<T_, Abi_>& val);
+        template <typename T_, typename Abi_>
+        inline friend void mask_assign(const simd_mask<T_, Abi_>& msk,
+            simd<T_, Abi_>& v, const simd<T_, Abi_>& val);
 
         template <typename T_, typename Abi_>
         inline friend simd<T_, Abi_> min(
@@ -1783,18 +1783,10 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
             return (c > 0) && (c < (int) size());
         }
 
-//         inline int find_first_set() const
-//         {
-//             auto index = sve_impl::simd_impl_<T_size>::first_true();
-//             for (int i = 0; i < (int) size(); i++)
-//             {
-//                 if (sve_impl::simd_impl_<T_size>::count(
-//                         svand_z(all_true, pred, index)))
-//                     return i;
-//                 index = sve_impl::simd_impl_<T_size>::next_true(index);
-//             }
-//             return -1;
-//         }
+        inline int find_first_set() const
+        {
+            return __riscv_vfirst(pred);
+        }
 
 //         inline int find_last_set() const
 //         {
@@ -1810,14 +1802,14 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
 //             return ans;
 //         }
 
-//     private:
-//         template <typename T_, typename Abi_>
-//         inline friend simd<T_, Abi_> choose(const simd_mask<T_, Abi_>& msk,
-//             const simd<T_, Abi_>& t, const simd<T_, Abi_>& f);
+    private:
+        template <typename T_, typename Abi_>
+        inline friend simd<T_, Abi_> choose(const simd_mask<T_, Abi_>& msk,
+            const simd<T_, Abi_>& t, const simd<T_, Abi_>& f);
 
-//         template <typename T_, typename Abi_>
-//         inline friend void mask_assign(const simd_mask<T_, Abi_>& msk,
-//             simd<T_, Abi_>& v, const simd<T_, Abi_>& val);
+        template <typename T_, typename Abi_>
+        inline friend void mask_assign(const simd_mask<T_, Abi_>& msk,
+            simd<T_, Abi_>& v, const simd<T_, Abi_>& val);
 
 //         template <typename T_, typename Abi_>
 //         inline friend simd<T_, Abi_> compact(
@@ -1828,41 +1820,41 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
 //             const simd<T_, Abi_>& x, const simd<T_, Abi_>& y);
     }; //class simd_mask
 
-//     template <class T, class Abi>
-//     inline bool all_of(const simd_mask<T, Abi>& m)
-//     {
-//         return m.all_of();
-//     }
+    template <class T, class Abi>
+    inline bool all_of(const simd_mask<T, Abi>& m)
+    {
+        return m.all_of();
+    }
 
-//     template <class T, class Abi>
-//     inline bool any_of(const simd_mask<T, Abi>& m)
-//     {
-//         return m.any_of();
-//     }
+    template <class T, class Abi>
+    inline bool any_of(const simd_mask<T, Abi>& m)
+    {
+        return m.any_of();
+    }
 
-//     template <class T, class Abi>
-//     inline bool none_of(const simd_mask<T, Abi>& m)
-//     {
-//         return m.none_of();
-//     }
+    template <class T, class Abi>
+    inline bool none_of(const simd_mask<T, Abi>& m)
+    {
+        return m.none_of();
+    }
 
-//     template <class T, class Abi>
-//     inline bool some_of(const simd_mask<T, Abi>& m)
-//     {
-//         return m.some_of();
-//     }
+    template <class T, class Abi>
+    inline bool some_of(const simd_mask<T, Abi>& m)
+    {
+        return m.some_of();
+    }
 
-//     template <class T, class Abi>
-//     inline int popcount(const simd_mask<T, Abi>& m)
-//     {
-//         return m.popcount();
-//     }
+    template <class T, class Abi>
+    inline int popcount(const simd_mask<T, Abi>& m)
+    {
+        return m.popcount();
+    }
 
-//     template <class T, class Abi>
-//     inline int find_first_set(const simd_mask<T, Abi>& m)
-//     {
-//         return m.find_first_set();
-//     }
+    template <class T, class Abi>
+    inline int find_first_set(const simd_mask<T, Abi>& m)
+    {
+        return m.find_first_set();
+    }
 
 //     template <class T, class Abi>
 //     inline int find_last_set(const simd_mask<T, Abi>& m)
@@ -1870,19 +1862,19 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
 //         return m.find_last_set();
 //     }
 
-//     template <typename T, typename Abi>
-//     inline simd<T, Abi> choose(const simd_mask<T, Abi>& msk,
-//         const simd<T, Abi>& t, const simd<T, Abi>& f)
-//     {
-//         return svsel(msk.pred, t.vec, f.vec);
-//     }
+    template <typename T, typename Abi>
+    inline simd<T, Abi> choose(const simd_mask<T, Abi>& msk,
+        const simd<T, Abi>& t, const simd<T, Abi>& f)
+    {
+        return __riscv_vmerge(t.vec, f.vec, msk.pred, t.size());
+    }
 
-//     template <typename T, typename Abi>
-//     inline void mask_assign(
-//         const simd_mask<T, Abi>& msk, simd<T, Abi>& v, const simd<T, Abi>& val)
-//     {
-//         v.vec = svsel(msk.pred, val.vec, v.vec);
-//     }
+    template <typename T, typename Abi>
+    inline void mask_assign(
+        const simd_mask<T, Abi>& msk, simd<T, Abi>& v, const simd<T, Abi>& val)
+    {
+        v.vec = __riscv_vmerge(v.vec, val.vec, msk.pred, v.size());
+    }
 
 //     template <typename T, typename Abi>
 //     inline simd<T, Abi> compact(

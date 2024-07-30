@@ -83,9 +83,32 @@ bool test(){
             success &= x_or[i] == (i % 2 == 0 || i % 3 == 0);
             success &= x_xor[i] == (i % 2 == 0) ^ (i % 3 == 0);
         }
-        
-        
+    }
 
+    // choose
+    {
+        simd_mask<T> x1(false);
+        simd<T> v1, v2;
+        for (size_t i = 0; i < simd_size; i++)
+        {
+            x1.set(i, i % 2 == 0);
+            v1.set(i, i);
+            v2.set(i, simd_size-i);
+        }
+
+        simd<T> v3 = choose(x1, v1, v2);
+        
+        for (size_t i = 0; i < simd_size; i++){
+            if(i%2){
+                success &= (v3[i] == i);
+            }else{
+                success &= (v3[i] == simd_size-i);
+            }
+        }
+
+        mask_assign(x1, v1, v2);
+
+        success &= (v1 == v3).all_of();
     }
     
     return success;
