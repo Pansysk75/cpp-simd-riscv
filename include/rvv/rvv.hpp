@@ -14,6 +14,77 @@
 
 namespace rvv_impl {
 
+    template <typename T>
+    struct vector_type;
+
+    template <>
+    struct vector_type<int8_t>
+    {
+        using type = vint8m1_t;
+    };
+
+    template <>
+    struct vector_type<int16_t>
+    {
+        using type = vint16m1_t;
+    };
+
+    template <>
+    struct vector_type<int32_t>
+    {
+        using type = vint32m1_t;
+    };
+
+    template <>
+    struct vector_type<int64_t>
+    {
+        using type = vint64m1_t;
+    };
+
+    template <>
+    struct vector_type<uint8_t>
+    {
+        using type = vuint8m1_t;
+    };
+
+    template <>
+    struct vector_type<uint16_t>
+    {
+        using type = vuint16m1_t;
+    };
+
+    template <>
+    struct vector_type<uint32_t>
+    {
+        using type = vuint32m1_t;
+    };
+
+    template <>
+    struct vector_type<uint64_t>
+    {
+        using type = vuint64m1_t;
+    };
+
+    template <>
+    struct vector_type<_Float16>
+    {
+        using type = vfloat16m1_t;
+    };
+
+    template <>
+    struct vector_type<float>
+    {
+        using type = vfloat32m1_t;
+    };
+
+    template <>
+    struct vector_type<double>
+    {
+        using type = vfloat64m1_t;
+    };
+
+
+
     template <typename T, typename... U>
     concept IsAnyOf = (std::same_as<T, U> || ...);
     
@@ -36,49 +107,50 @@ namespace rvv_impl {
     template <SignedSIMD T>
     struct simd_impl_base<T>{
 
-        inline static auto get(auto vec, auto index, size_t size)
+        typedef vector_type<T>::type Vector;
+
+        inline static T get(auto vec, auto index, size_t size)
         {
             return __riscv_vmv_x(__riscv_vslidedown(vec, index, size));
         }
 
         // Arithmetic Operations
 
-        inline static auto add(auto x, auto y, size_t size)
+        inline static Vector add(auto x, auto y, size_t size)
         {
             return __riscv_vadd(x, y, size);
         }
 
-        inline static auto sub(auto x, auto y, size_t size)
+        inline static Vector sub(auto x, auto y, size_t size)
         {
             return __riscv_vsub(x, y, size);
         }
 
-        inline static auto multiply(auto x, auto y, size_t size)
+        inline static Vector multiply(auto x, auto y, size_t size)
         {
             return __riscv_vmul(x, y, size);
         }
 
-        inline static auto divide(auto x, auto y, size_t size)
+        inline static Vector divide(auto x, auto y, size_t size)
         {
             return __riscv_vdiv(x, y, size);
         }
 
-        inline static auto min(auto x, auto y, size_t size)
+        inline static Vector min(auto x, auto y, size_t size)
         {
             return __riscv_vmin(x, y, size);
         }
 
-        inline static auto max(auto x, auto y, size_t size)
+        inline static Vector max(auto x, auto y, size_t size)
         {
             return __riscv_vmax(x, y, size);
         }
 
         // Reduction Operations
 
-        template <typename U>
-        inline static T reduce_sum(U x, size_t size)
+        inline static T reduce_sum(auto x, size_t size)
         {
-            return __riscv_vmv_x(__riscv_vredsum(x, U(), size));
+            return __riscv_vmv_x(__riscv_vredsum(x, Vector(), size));
         }
 
         inline static T reduce_min(auto x, size_t size)
@@ -123,49 +195,50 @@ namespace rvv_impl {
     template <UnignedSIMD T>
     struct simd_impl_base<T>{
 
-        inline static auto get(auto vec, auto index, size_t size)
+        typedef vector_type<T>::type Vector;
+
+        inline static T get(auto vec, auto index, size_t size)
         {
             return __riscv_vmv_x(__riscv_vslidedown(vec, index, size));
         }
 
         // Arithmetic Operations
 
-        inline static auto add(auto x, auto y, size_t size)
+        inline static Vector add(auto x, auto y, size_t size)
         {
             return __riscv_vadd(x, y, size);
         }
 
-        inline static auto sub(auto x, auto y, size_t size)
+        inline static Vector sub(auto x, auto y, size_t size)
         {
             return __riscv_vsub(x, y, size);
         }
 
-        inline static auto divide(auto x, auto y, size_t size)
+        inline static Vector divide(auto x, auto y, size_t size)
         {
             return __riscv_vdivu(x, y, size);
         }
 
-        inline static auto multiply(auto x, auto y, size_t size)
+        inline static Vector multiply(auto x, auto y, size_t size)
         {
             return __riscv_vmul(x, y, size);
         }
 
         
-        inline static auto min(auto x, auto y, size_t size)
+        inline static Vector min(auto x, auto y, size_t size)
         {
             return __riscv_vminu(x, y, size);
         }
 
-        inline static auto max(auto x, auto y, size_t size)
+        inline static Vector max(auto x, auto y, size_t size)
         {
             return __riscv_vmaxu(x, y, size);
         }
         
         // Reduction Operations
-        template <typename U>
-        inline static T reduce_sum(U x, size_t size)
+        inline static T reduce_sum(auto x, size_t size)
         {
-            return __riscv_vmv_x(__riscv_vredsum(x, U(), size));
+            return __riscv_vmv_x(__riscv_vredsum(x, Vector(), size));
         }
 
         inline static T reduce_min(auto x, size_t size)
@@ -210,49 +283,50 @@ namespace rvv_impl {
     template <FloatingSIMD T>
     struct simd_impl_base<T>{
 
-        inline static auto get(auto vec, auto index, size_t size)
+        typedef vector_type<T>::type Vector;
+
+        inline static int get(auto vec, auto index, size_t size)
         {
             return __riscv_vfmv_f(__riscv_vslidedown(vec, index, size));
         }
 
         // Arithmetic Operations
 
-        inline static auto add(auto x, auto y, size_t size)
+        inline static Vector add(auto x, auto y, size_t size)
         {
             return __riscv_vfadd(x, y, size);
         }
 
-        inline static auto sub(auto x, auto y, size_t size)
+        inline static Vector sub(auto x, auto y, size_t size)
         {
             return __riscv_vfsub(x, y, size);
         }
 
-        inline static auto divide(auto x, auto y, size_t size)
+        inline static Vector divide(auto x, auto y, size_t size)
         {
             return __riscv_vfdiv(x, y, size);
         }
 
-        inline static auto multiply(auto x, auto y, size_t size)
+        inline static Vector multiply(auto x, auto y, size_t size)
         {
             return __riscv_vfmul(x, y, size);
         }
 
-        inline static auto min(auto x, auto y, size_t size)
+        inline static Vector min(auto x, auto y, size_t size)
         {
             return __riscv_vfmin(x, y, size);
         }
 
-        inline static auto max(auto x, auto y, size_t size)
+        inline static Vector max(auto x, auto y, size_t size)
         {
             return __riscv_vfmax(x, y, size);
         }
 
         // Reduction Operations
 
-        template <typename U>
-        inline static T reduce_sum(U x, size_t size)
+        inline static T reduce_sum(auto x, size_t size)
         {
-            return __riscv_vfmv_f(__riscv_vfredusum(x, U(), size));
+            return __riscv_vfmv_f(__riscv_vfredusum(x, Vector(), size));
         }
 
         inline static T reduce_min(auto x, size_t size)
