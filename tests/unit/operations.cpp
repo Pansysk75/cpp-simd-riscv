@@ -192,13 +192,20 @@ bool test(){
 
     std::cout << "Elementwise Binary Algorithms" << std::endl;
     // min
-    std::cout << "max: " << std::endl;
+    std::cout << "min: " << std::endl;
     std::transform(data_x.begin(), data_x.end(), data_y.begin(), data_res.begin(), [](auto a, auto b){ return std::min(a, b); });
     success &= test_equal(min(x, y), data_res);
     // max
     std::cout << "max: " << std::endl;
     std::transform(data_x.begin(), data_x.end(), data_y.begin(), data_res.begin(), [](auto a, auto b){ return std::max(a, b); });
     success &= test_equal(max(x, y), data_res);
+    // copysign
+    if constexpr(std::is_floating_point_v<T>)
+    {
+        std::cout << "copysign: " << std::endl;
+        std::transform(data_x.begin(), data_x.end(), data_y.begin(), data_res.begin(), [](auto a, auto b){ return std::copysign(a, -b); });
+        success &= test_equal(copysign(x, -y), data_res);
+    }
     }
 
     // Unary Algorithms
