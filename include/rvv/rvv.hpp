@@ -491,8 +491,11 @@ namespace rvv_impl {
             return __riscv_vle8_v_i8m1(ptr, size);
         }
 
-        inline static const value_t iota_array[16] = {
-            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+        inline static const value_t iota_array[64] = {
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+            32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+            48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63};
         inline static const Vector index0123 = load(iota_array);
 
         template <typename T>
@@ -554,8 +557,11 @@ namespace rvv_impl {
             return __riscv_vle8_v_u8m1(ptr, size);
         }
 
-        inline static const value_t iota_array[16] = {
-            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+        inline static const value_t iota_array[64] = {
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
+            32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
+            48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63};
         inline static const Vector index0123 = load(iota_array);
 
         template <typename T>
@@ -591,8 +597,9 @@ namespace rvv_impl {
             return __riscv_vle16_v_i16m1(ptr, size);
         }
 
-        inline static const value_t iota_array[16] = {
-            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+        inline static const value_t iota_array[32] = {
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
         inline static const Vector index0123 = load(iota_array);
 
         template <typename T>
@@ -636,8 +643,9 @@ namespace rvv_impl {
             return __riscv_vle16_v_u16m1(ptr, size);
         }
 
-        inline static const value_t iota_array[16] = {
-            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+        inline static const value_t iota_array[32] = {
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
         inline static const Vector index0123 = load(iota_array);
 
         template <typename T>
@@ -738,49 +746,78 @@ namespace rvv_impl {
         }
 
     };
-    // template <>
-    // struct simd_impl<int64_t>
-    // {
-    //     using T = int64_t;
-    //     typedef svint64_t Vector __attribute__((arm_sve_vector_bits(SVE_LEN)));
-    //     static constexpr std::size_t size = max_vector_pack_size / sizeof(T);
+template <>
+    struct simd_impl<int64_t> : simd_impl_base<int64_t>
+    {
+        using value_t = int64_t;
+        typedef vint64m1_t Vector __attribute__((riscv_rvv_vector_bits(RVV_LEN)));
+        typedef vbool64_t Predicate __attribute__((riscv_rvv_vector_bits(RVV_LEN / 64)));
+        static constexpr std::size_t size = max_vector_pack_size / sizeof(value_t);
 
-    //     inline static Vector set(Vector vec, Predicate index, T val)
-    //     {
-    //         return svdup_s64_m(vec, index, val);
-    //     }
-    //     inline static Vector fill(T val)
-    //     {
-    //         return svdup_s64(val);
-    //     }
-    //     inline static Vector index_series(T base, T step)
-    //     {
-    //         return svindex_s64(base, step);
-    //     }
-    //     inline static const Vector index0123 = svindex_s64(T(0), T(1));
-    // };
+        template <typename T>
+        inline static Vector load(const T* ptr)
+        {
+            return __riscv_vle64_v_i64m1(ptr, size);
+        }
 
-    // template <>
-    // struct simd_impl<uint64_t>
-    // {
-    //     using T = uint64_t;
-    //     typedef svuint64_t Vector __attribute__((arm_sve_vector_bits(SVE_LEN)));
-    //     static constexpr std::size_t size = max_vector_pack_size / sizeof(T);
+        inline static const value_t iota_array[8] = {
+            0, 1, 2, 3, 4, 5, 6, 7};
+        inline static const Vector index0123 = load(iota_array);
 
-    //     inline static Vector set(Vector vec, Predicate index, T val)
-    //     {
-    //         return svdup_u64_m(vec, index, val);
-    //     }
-    //     inline static Vector fill(T val)
-    //     {
-    //         return svdup_u64(val);
-    //     }
-    //     inline static Vector index_series(T base, T step)
-    //     {
-    //         return svindex_u64(base, step);
-    //     }
-    //     inline static const Vector index0123 = svindex_u64(T(0), T(1));
-    // };
+        template <typename T>
+        inline static void store(Vector vec, T* ptr)
+        {
+            __riscv_vse64(ptr, vec, size);
+        }
+
+        inline static Vector set(Vector vec, size_t index, value_t val)
+        {
+            Predicate mask = __riscv_vmseq(index0123, index, size);
+            return __riscv_vmerge(vec, val, mask, size);
+        }
+
+        inline static Vector fill(value_t val)
+        {
+            return __riscv_vmv_v_x_i64m1(val, size);
+        }
+    };
+
+    template <>
+    struct simd_impl<uint64_t> : simd_impl_base<uint64_t>
+    {
+        using value_t = uint64_t;
+        typedef vuint64m1_t Vector __attribute__((riscv_rvv_vector_bits(RVV_LEN)));
+        typedef vbool64_t Predicate __attribute__((riscv_rvv_vector_bits(RVV_LEN / 64)));
+        static constexpr std::size_t size = max_vector_pack_size / sizeof(value_t);
+
+        template <typename T>
+        inline static Vector load(const T* ptr)
+        {
+            return __riscv_vle64_v_u64m1(ptr, size);
+        }
+
+        inline static const value_t iota_array[8] = {
+            0, 1, 2, 3, 4, 5, 6, 7};
+        inline static const Vector index0123 = load(iota_array);
+
+        template <typename T>
+        inline static void store(Vector vec, T* ptr)
+        {
+            __riscv_vse64(ptr, vec, size);
+        }
+
+        inline static Vector set(Vector vec, size_t index, value_t val)
+        {
+            Predicate mask = __riscv_vmseq(index0123, index, size);
+            return __riscv_vmerge(vec, val, mask, size);
+        }
+
+        inline static Vector fill(value_t val)
+        {
+             return __riscv_vmv_v_x_u64m1(val, size);
+        }
+
+    };
 
     // // ----------------------------------------------------------------------
     // template <>
@@ -845,26 +882,44 @@ namespace rvv_impl {
 
     };
 
-    // template <>
-    // struct simd_impl<double>
-    // {
-    //     typedef svfloat64_t Vector
-    //         __attribute__((arm_sve_vector_bits(SVE_LEN)));
-    //     static constexpr std::size_t size =
-    //         max_vector_pack_size / sizeof(double);
+ template <>
+    struct simd_impl<double> : simd_impl_base<double>
+    {
+        using value_t = double;
+        typedef vfloat64m1_t Vector __attribute__((riscv_rvv_vector_bits(RVV_LEN)));
+        typedef vbool64_t Predicate __attribute__((riscv_rvv_vector_bits(RVV_LEN / 64)));
+        static constexpr std::size_t size = max_vector_pack_size / sizeof(value_t);
 
-    //     inline static Vector set(Vector vec, Predicate index, double val)
-    //     {
-    //         return svdup_f64_m(vec, index, val);
-    //     }
-    //     inline static Vector fill(double val)
-    //     {
-    //         return svdup_f64(val);
-    //     }
-    //     inline static const double iota_array[8] = {0, 1, 2, 3, 4, 5, 6, 7};
-    //     inline static const Vector index0123 =
-    //         svld1(sve_impl::simd_impl_<sizeof(double)>::all_true(), iota_array);
-    // };
+        template <typename T>
+        inline static Vector load(const T* ptr)
+        {
+            return __riscv_vle64_v_f64m1(ptr, size);
+        }
+
+        inline static const value_t iota_array[8] = {
+            0, 1, 2, 3, 4, 5, 6, 7};
+        inline static const Vector index0123 = load(iota_array);
+
+        template <typename T>
+        inline static void store(Vector vec, T* ptr)
+        {
+            __riscv_vse64(ptr, vec, size);
+        }
+
+
+        inline static Vector set(Vector vec, size_t index, value_t val)
+        {
+            Predicate mask = __riscv_vmfeq(index0123, value_t(index), size);
+            return __riscv_vfmerge(vec, val, mask, size);
+        }
+
+
+        inline static Vector fill(value_t val)
+        {
+            return __riscv_vfmv_v_f_f64m1(val, size);
+        }
+
+    };
 }    // namespace sve_impl
 
 

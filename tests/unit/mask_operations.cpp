@@ -123,16 +123,22 @@ int main(){
     success &= test<int16_t>();
     std::cout << "\nTesting type: " << "int32_t" << std::endl;
     success &= test<int32_t>();
+    std::cout << "\nTesting type: " << "int64_t" << std::endl;
+    success &= test<int64_t>();
 
-    // std::cout << "\nTesting type: " << "uint8_t" << std::endl;
-    // success &= test<uint8_t>();
-    // std::cout << "\nTesting type: " << "uint16_t" << std::endl;
-    // success &= test<uint16_t>();
-    // std::cout << "\nTesting type: " << "uint32_t" << std::endl;
-    // success &= test<uint32_t>();
+    std::cout << "\nTesting type: " << "uint8_t" << std::endl;
+    success &= test<uint8_t>();
+    std::cout << "\nTesting type: " << "uint16_t" << std::endl;
+    success &= test<uint16_t>();
+    std::cout << "\nTesting type: " << "uint32_t" << std::endl;
+    success &= test<uint32_t>();
+    std::cout << "\nTesting type: " << "uint64_t" << std::endl;
+    success &= test<uint64_t>();
 
-    // std::cout << "\nTesting type: " << "float" << std::endl;
-    // success &= test<float>();
+    std::cout << "\nTesting type: " << "float" << std::endl;
+    success &= test<float>();
+    std::cout << "\nTesting type: " << "double" << std::endl;
+    success &= test<double>();
 
     return success ? 0 : -1;
 }
