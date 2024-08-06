@@ -285,7 +285,7 @@ namespace rvv_impl {
 
         typedef vector_type<T>::type Vector;
 
-        inline static int get(auto vec, auto index, size_t size)
+        inline static T get(auto vec, auto index, size_t size)
         {
             return __riscv_vfmv_f(__riscv_vslidedown(vec, index, size));
         }
