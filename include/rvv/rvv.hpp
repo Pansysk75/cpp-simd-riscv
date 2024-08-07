@@ -1750,8 +1750,10 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
         // ----------------------------------------------------------------------
         bool get(int idx) const
         {
-            if (idx < 0 || idx > (int) size())
-                throw std::out_of_range("index out of range");
+            if (idx < 0 || idx > (int) size()){
+                return false;
+                // throw std::out_of_range("index out of range");
+            }
 
             auto index_mask = (index0123==simd_type(T(idx)));
             return rvv_impl::simd_impl_<T_size>::count(
@@ -1985,7 +1987,7 @@ namespace rvv::experimental { inline namespace parallelism_v2 {
     inline simd<T, Abi> choose(const simd_mask<T, Abi>& msk,
         const simd<T, Abi>& t, const simd<T, Abi>& f)
     {
-        return __riscv_vmerge(t.vec, f.vec, msk.pred, t.size());
+        return __riscv_vmerge(f.vec, t.vec, msk.pred, t.size());
     }
 
     template <typename T, typename Abi>

@@ -4,6 +4,16 @@
 #include <numeric>
 #include <algorithm>
 #include <cmath>
+#include <ctime>
+#include <cstdlib>
+#include <concepts>
+
+bool test_true(bool x){
+    if(!x){
+        std::cout << "Test failed!" << std::endl;
+    }
+    return x;
+}
 
 template <typename T>
 bool test_equal(rvv::experimental::simd<T> x, const std::vector<T>& data){
@@ -17,7 +27,9 @@ bool test_equal(rvv::experimental::simd<T> x, const std::vector<T>& data){
     std::vector<T> x_data(x.size());
     x.copy_to(x_data.data(), rvv::experimental::vector_aligned);
 
-    return std::equal(data.begin(), data.end(), x_data.begin());
+    bool success = std::equal(data.begin(), data.end(), x_data.begin());
+
+    return test_true(success);
 }
 
 template <typename T>
@@ -25,6 +37,17 @@ bool test(){
     bool success = true;
     using namespace rvv::experimental;
     const int simd_size = simd<T>::size();
+
+    std::vector<bool> _random_mask(simd_size);
+    std::vector<bool> _random_mask2(simd_size);
+
+    for (int i = 0; i < simd_size; i++){
+        _random_mask[i] = std::rand() % 2 == 0;
+        _random_mask2[i] = std::rand() % 2 == 0;
+    }
+
+    const std::vector<bool> random_mask = _random_mask;
+    const std::vector<bool> random_mask2 = _random_mask2;
 
     {
         // Default constructor (all 0)
@@ -49,11 +72,12 @@ bool test(){
         // set-get
         simd_mask<T> x;
         for (int i = 0; i < simd_size; i++){
-            x.set(i, i % 2 == 0);
+            x.set(i, random_mask[i]);
         }
         std::cout << "x (set): " << x << std::endl;
         for (int i = 0; i < simd_size; i++){
-            success &= x[i] == (i % 2 == 0);
+            success &= test_true(x[i] == random_mask[i]);
+            success &= test_true(x.get(i) == random_mask[i]);
         }
     }
     {
@@ -61,54 +85,78 @@ bool test(){
         simd_mask<T> x1, x2;
         for (size_t i = 0; i < simd_size; i++)
         {
-            x1.set(i, i % 2 == 0);
-            x2.set(i, i % 3 == 0);
+            x1.set(i, random_mask[i]);
+            x2.set(i, random_mask2[i]);
         }
         std::cout << "x1: " << x1 << std::endl;
         std::cout << "x2: " << x2 << std::endl;
 
         simd_mask<T> x_not = !x1;
         std::cout << "!x1: " << x_not << std::endl;
+        for (size_t i = 0; i < simd_size; i++)
+            success &= test_true(x_not[i] == !random_mask[i]);
+        
+
         simd_mask<T> x_and = x1 && x2;
         std::cout << "x1 && x2: " << x_and << std::endl;
+        for (size_t i = 0; i < simd_size; i++)
+            success &= test_true(x_and[i] == (random_mask[i] && random_mask2[i]));
+
+
         simd_mask<T> x_or = x1 || x2;
         std::cout << "x1 || x2: " << x_or << std::endl;
+        for (size_t i = 0; i < simd_size; i++)
+            success &= test_true(x_or[i] == (random_mask[i] || random_mask2[i]));
+
         simd_mask<T> x_xor = x1 ^ x2;
         std::cout << "x1 ^ x2: " << x_xor << std::endl; 
-
         for (size_t i = 0; i < simd_size; i++)
-        {
-            success &= x_not[i] == !(i % 2 == 0);
-            success &= x_and[i] == (i % 2 == 0 && i % 3 == 0);
-            success &= x_or[i] == (i % 2 == 0 || i % 3 == 0);
-            success &= x_xor[i] == (i % 2 == 0) ^ (i % 3 == 0);
-        }
+            success &= test_true(x_xor[i] == (random_mask[i] ^ random_mask2[i]));
+  
     }
 
-    // choose
+    // choose / mask_assign
     {
         simd_mask<T> x1(false);
         simd<T> v1, v2;
         for (size_t i = 0; i < simd_size; i++)
         {
-            x1.set(i, i % 2 == 0);
-            v1.set(i, i);
-            v2.set(i, simd_size-i);
+            x1.set(i, random_mask[i]);
+            v1.set(i, T(std::rand() % 100));
+            v2.set(i, T(std::rand() % 100));
         }
 
+        std::cout << "choose: " << std::endl;
+        std::cout << "x1: " << x1 << std::endl;
+        std::cout << "v1: " << v1 << std::endl;
+        std::cout << "v2: " << v2 << std::endl;
         simd<T> v3 = choose(x1, v1, v2);
+        std::cout << "v3: " << v3 << std::endl;
         
         for (size_t i = 0; i < simd_size; i++){
-            if(i%2){
-                success &= (v3[i] == i);
-            }else{
-                success &= (v3[i] == simd_size-i);
+            if (x1[i]){
+                success &= test_true(v3[i] == v1[i]);
+            } else {
+                success &= test_true(v3[i] == v2[i]);
             }
         }
 
+        simd<T> v1_old = v1;
+        std::cout << "mask_assign: " << std::endl;
+        std::cout << "x1: " << x1 << std::endl;
+        std::cout << "v1_old: " << v1_old << std::endl;
+        std::cout << "v2: " << v2 << std::endl;
         mask_assign(x1, v1, v2);
+        std::cout << "v1: " << v1 << std::endl;
 
-        success &= (v1 == v3).all_of();
+        for (size_t i = 0; i < simd_size; i++){
+            if (x1[i]){
+                success &= test_true(v1[i] == v2[i]);
+            } else {
+                success &= test_true(v1[i] == v1_old[i]);
+            }
+        }
+        
     }
     
     return success;
